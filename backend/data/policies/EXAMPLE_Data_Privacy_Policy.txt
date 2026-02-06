@@ -1,0 +1,77 @@
+EXAMPLE COMPANY - DATA PRIVACY POLICY
+=======================================
+
+This is an EXAMPLE policy document. Replace with your actual organizational policies.
+
+1. PURPOSE
+----------
+This policy establishes guidelines for the collection, use, storage, and sharing of customer and employee data.
+
+2. SCOPE
+--------
+This policy applies to all employees, contractors, and third parties who have access to company data.
+
+3. DATA CLASSIFICATION
+---------------------
+3.1 Public Data: Information that can be freely shared
+3.2 Internal Data: Information for internal use only
+3.3 Confidential Data: Sensitive information requiring protection
+3.4 Restricted Data: Highly sensitive data (PII, financial, health)
+
+4. DATA COLLECTION
+------------------
+4.1 Only collect data necessary for business purposes
+4.2 Obtain consent before collecting personal information
+4.3 Clearly communicate data collection purposes to data subjects
+
+5. DATA USAGE
+-------------
+5.1 Use data only for stated purposes
+5.2 Do not use customer data for unauthorized marketing
+5.3 Employees must not access data outside their job responsibilities
+
+6. DATA SHARING
+---------------
+6.1 Customer data must NOT be shared with third parties without explicit consent
+6.2 Data sharing with vendors requires:
+    - Written data processing agreement
+    - Privacy impact assessment
+    - Manager approval
+6.3 Bulk data exports require approval from Data Protection Officer
+
+7. DATA STORAGE
+---------------
+7.1 Store data in approved systems only
+7.2 Encrypt sensitive data at rest and in transit
+7.3 Implement appropriate access controls
+
+8. DATA RETENTION
+-----------------
+8.1 Retain data only as long as necessary
+8.2 Follow retention schedules:
+    - Customer transaction data: 7 years
+    - Marketing data: 3 years
+    - Application logs: 90 days
+
+9. DATA DISPOSAL
+----------------
+9.1 Securely delete data when no longer needed
+9.2 Use approved data destruction methods
+9.3 Document all data disposal activities
+
+10. INCIDENT RESPONSE
+--------------------
+10.1 Report suspected data breaches immediately
+10.2 Follow incident response procedures
+10.3 Notify affected parties within 72 hours if required
+
+11. VIOLATIONS
+-------------
+Violations of this policy may result in disciplinary action, up to and including termination.
+
+12. POLICY UPDATES
+-----------------
+This policy is reviewed annually and updated as needed.
+
+Last Updated: January 2024
+Version: 1.0
