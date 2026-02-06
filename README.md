@@ -330,39 +330,6 @@ aws s3 sync dist/ s3://your-bucket-name
 
 ---
 
-## 🛣️ Roadmap
-
-### ✅ Phase 1 (Completed)
-- [x] Architecture design
-- [x] Project structure setup
-- [x] Technology stack selection
-
-### 🔄 Phase 2 (In Progress)
-- [ ] Backend API implementation
-- [ ] RAG chain with LangChain
-- [ ] Vector DB integration
-- [ ] Basic frontend UI
-
-### 📋 Phase 3 (Planned)
-- [ ] Advanced UI with real-time visualization
-- [ ] Caching layer (Redis)
-- [ ] Comprehensive testing
-- [ ] AWS deployment
-
-### 🚀 Phase 4 (Future)
-- [ ] Admin dashboard for policy management
-- [ ] Analytics and reporting
-- [ ] Multi-tenant support
-- [ ] Open-source release
-
----
-
-## 🤝 Contributing
-
-This is currently a portfolio project. Once mature, contributions will be welcome!
-
----
-
 ## 📄 License
 
 MIT License
@@ -372,7 +339,7 @@ MIT License
 ## 👤 Author
 
 **Lidor Pahima**
-* AI Solutions Engineer
+* AI Engineer
 * Email: lidorpahima28@gmail.com
 * LinkedIn: [linkedin.com/in/lidor-pahima](https://linkedin.com/in/lidor-pahima)
 * GitHub: [github.com/Lidorpahima](https://github.com/Lidorpahima)
