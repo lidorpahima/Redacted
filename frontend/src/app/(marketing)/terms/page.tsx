@@ -12,7 +12,7 @@ const TermsPage = () => {
                     Last updated: 17th June 2024
                 </p>
                 <p className="mt-4">
-                    Welcome to Frontend. These terms and conditions outline the rules and regulations for the use of Frontend&apos;s website and services.
+                    Welcome to Redacted. These terms and conditions outline the rules and regulations for the use of Redacted&apos;s website and services.
                 </p>
 
                 <h2 className="text-xl font-medium mt-8">
@@ -20,14 +20,14 @@ const TermsPage = () => {
                 </h2>
 
                 <p className="mt-8 text-muted-foreground">
-                    By accessing and using Frontend, you accept and agree to be bound by these terms and conditions. If you do not agree to these terms, you may not use our website or services.
+                    By accessing and using Redacted, you accept and agree to be bound by these terms and conditions. If you do not agree to these terms, you may not use our website or services.
                 </p>
 
                 <h2 className="text-xl font-medium mt-12">
                     Changes to Terms
                 </h2>
                 <p className="mt-8 text-muted-foreground">
-                    Frontend reserves the right to modify these terms at any time. We will notify you of any changes by updating the &quot;Last updated&quot; data at the top of this page. You continued use of our website and services after any modifications indicates your acceptance of the new terms.
+                    Redacted reserves the right to modify these terms at any time. We will notify you of any changes by updating the &quot;Last updated&quot; data at the top of this page. You continued use of our website and services after any modifications indicates your acceptance of the new terms.
                 </p>
 
                 <h2 className="text-xl font-medium mt-12">
@@ -145,7 +145,7 @@ const TermsPage = () => {
                     Limitation of Liability
                 </h3>
                 <p className="mt-8 text-muted-foreground">
-                    In no event shall Frontend be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of the service.
+                    In no event shall Redacted be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of the service.
                 </p>
 
                 <h2 className="text-xl font-medium mt-12">
@@ -159,11 +159,11 @@ const TermsPage = () => {
                     Contact Us
                 </h2>
                 <p className="mt-8 text-muted-foreground">
-                    If you have any questions or concerns about this Privacy Policy, please contact us at support@frontend.io.
+                    If you have any questions or concerns about this Privacy Policy, please contact us at support@redacted.io.
                 </p>
 
                 <p className="mt-8 font-medium">
-                    By using Frontend, you acknowledge that you have read, understood, and agree to be bound by these terms and conditions.
+                    By using Redacted, you acknowledge that you have read, understood, and agree to be bound by these terms and conditions.
                 </p>
             </AnimationContainer>
         </MaxWidthWrapper>

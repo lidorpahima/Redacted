@@ -69,7 +69,7 @@ const HomePage = async () => {
                                 delay={9}
                             />
                             <Image
-                                src="/assets/dashboard-dark.svg"
+                                src="/assets/dashboard-dark.png"
                                 alt="Dashboard"
                                 width={1200}
                                 height={1200}
@@ -143,10 +143,10 @@ const HomePage = async () => {
                     <div className="flex flex-col items-center lg:items-center justify-center w-full py-8 max-w-xl mx-auto">
                         <MagicBadge title="The Process" />
                         <h2 className="text-center lg:text-center text-3xl md:text-5xl !leading-[1.1] font-medium font-heading text-foreground mt-6">
-                            Effortless link management in 3 steps
+                            Secure your LLM traffic in 3 steps
                         </h2>
                         <p className="mt-4 text-center lg:text-center text-lg text-muted-foreground max-w-lg">
-                            Follow these simple steps to optimize, organize, and share your links with ease.
+                            Route requests through the gateway, enforce policies and block threats, then get fast and secure responses—all in one place.
                         </p>
                     </div>
                 </AnimationContainer>
@@ -177,13 +177,13 @@ const HomePage = async () => {
             {/* Pricing Section */}
             <MaxWidthWrapper className="py-10">
                 <AnimationContainer delay={0.1}>
-                    <div className="flex flex-col items-center lg:items-center justify-center w-full py-8 max-w-xl mx-auto">
-                        <MagicBadge title="Simple Pricing" />
+                    <div className="flex flex-col items-center lg:items-center justify-center w-full py-8 max-w-2xl mx-auto">
+                        <MagicBadge title="Pricing" />
                         <h2 className="text-center lg:text-center text-3xl md:text-5xl !leading-[1.1] font-medium font-heading text-foreground mt-6">
-                            Choose a plan that works for you
+                            Enterprise security at startup prices
                         </h2>
                         <p className="mt-4 text-center lg:text-center text-lg text-muted-foreground max-w-lg">
-                            Get started with Redacted today and enjoy more features with our pro plans.
+                            Freemium + usage-based. Start free, scale as you grow. Contact sales for paid plans—no credit card required to get started.
                         </p>
                     </div>
                 </AnimationContainer>
@@ -191,117 +191,63 @@ const HomePage = async () => {
                     <PricingCards />
                 </AnimationContainer>
                 <AnimationContainer delay={0.3}>
-                    <div className="flex flex-wrap items-start md:items-center justify-center lg:justify-evenly gap-6 mt-12 max-w-5xl mx-auto w-full">
+                    <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 mt-10 max-w-3xl mx-auto w-full">
                         <div className="flex items-center gap-2">
-                            <CreditCardIcon className="w-5 h-5 text-foreground" />
-                            <span className="text-muted-foreground">
-                                No credit card required
-                            </span>
+                            <CreditCardIcon className="w-5 h-5 text-foreground shrink-0" />
+                            <span className="text-muted-foreground text-sm">No credit card required</span>
+                        </div>
+                        <span className="text-muted-foreground/60">•</span>
+                        <span className="text-muted-foreground text-sm">Contact sales for Startup, Professional & Enterprise</span>
+                        <span className="text-muted-foreground/60">•</span>
+                        <span className="text-muted-foreground text-sm">20% off with annual billing</span>
+                    </div>
+                </AnimationContainer>
+                {/* Market comparison: why our pricing wins */}
+                <AnimationContainer delay={0.35}>
+                    <div className="mt-14 max-w-3xl mx-auto">
+                        <p className="text-center text-sm font-medium text-muted-foreground mb-4">How we compare</p>
+                        <div className="overflow-x-auto rounded-lg border border-border">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="border-b border-border bg-muted/30">
+                                        <th className="text-left py-3 px-4 font-medium">Provider</th>
+                                        <th className="text-left py-3 px-4 font-medium">Free tier</th>
+                                        <th className="text-left py-3 px-4 font-medium">Paid from</th>
+                                        <th className="text-left py-3 px-4 font-medium">Enterprise</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-muted-foreground">
+                                    <tr className="border-b border-border/50">
+                                        <td className="py-3 px-4">Lakera</td>
+                                        <td className="py-3 px-4">Limited</td>
+                                        <td className="py-3 px-4">$99/mo</td>
+                                        <td className="py-3 px-4">Custom ($500+/mo)</td>
+                                    </tr>
+                                    <tr className="border-b border-border/50">
+                                        <td className="py-3 px-4">Cloudflare AI Gateway</td>
+                                        <td className="py-3 px-4">Yes</td>
+                                        <td className="py-3 px-4">Free + infra</td>
+                                        <td className="py-3 px-4">Custom</td>
+                                    </tr>
+                                    <tr className="border-b border-border/50">
+                                        <td className="py-3 px-4">Portkey</td>
+                                        <td className="py-3 px-4">Trial</td>
+                                        <td className="py-3 px-4">$49/mo</td>
+                                        <td className="py-3 px-4">Custom</td>
+                                    </tr>
+                                    <tr className="bg-primary/5">
+                                        <td className="py-3 px-4 font-medium text-foreground">Redacted</td>
+                                        <td className="py-3 px-4">1K req/mo</td>
+                                        <td className="py-3 px-4 font-medium text-foreground">$49/mo</td>
+                                        <td className="py-3 px-4 font-medium text-foreground">$1K–5K/mo</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </AnimationContainer>
             </MaxWidthWrapper>
 
-            {/* Reviews Section */}
-            <MaxWidthWrapper className="py-10">
-                <AnimationContainer delay={0.1}>
-                    <div className="flex flex-col items-center lg:items-center justify-center w-full py-8 max-w-xl mx-auto">
-                        <MagicBadge title="Our Customers" />
-                        <h2 className="text-center lg:text-center text-3xl md:text-5xl !leading-[1.1] font-medium font-heading text-foreground mt-6">
-                            What our users are saying
-                        </h2>
-                        <p className="mt-4 text-center lg:text-center text-lg text-muted-foreground max-w-lg">
-                            Here&apos;s what some of our users have to say about Redacted.
-                        </p>
-                    </div>
-                </AnimationContainer>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-start gap-4 md:gap-8 py-10">
-                    <div className="flex flex-col items-start h-min gap-6">
-                        {REVIEWS.slice(0, 3).map((review, index) => (
-                            <AnimationContainer delay={0.2 * index} key={index}>
-                                <MagicCard key={index} className="md:p-0">
-                                    <Card className="flex flex-col w-full border-none h-min">
-                                        <CardHeader className="space-y-0">
-                                            <CardTitle className="text-lg font-medium text-muted-foreground">
-                                                {review.name}
-                                            </CardTitle>
-                                            <CardDescription>
-                                                {review.username}
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4 pb-4">
-                                            <p className="text-muted-foreground">
-                                                {review.review}
-                                            </p>
-                                        </CardContent>
-                                        <CardFooter className="w-full space-x-1 mt-auto">
-                                            {Array.from({ length: review.rating }, (_, i) => (
-                                                <StarIcon key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                                            ))}
-                                        </CardFooter>
-                                    </Card>
-                                </MagicCard>
-                            </AnimationContainer>
-                        ))}
-                    </div>
-                    <div className="flex flex-col items-start h-min gap-6">
-                        {REVIEWS.slice(3, 6).map((review, index) => (
-                            <AnimationContainer delay={0.2 * index} key={index}>
-                                <MagicCard key={index} className="md:p-0">
-                                    <Card className="flex flex-col w-full border-none h-min">
-                                        <CardHeader className="space-y-0">
-                                            <CardTitle className="text-lg font-medium text-muted-foreground">
-                                                {review.name}
-                                            </CardTitle>
-                                            <CardDescription>
-                                                {review.username}
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4 pb-4">
-                                            <p className="text-muted-foreground">
-                                                {review.review}
-                                            </p>
-                                        </CardContent>
-                                        <CardFooter className="w-full space-x-1 mt-auto">
-                                            {Array.from({ length: review.rating }, (_, i) => (
-                                                <StarIcon key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                                            ))}
-                                        </CardFooter>
-                                    </Card>
-                                </MagicCard>
-                            </AnimationContainer>
-                        ))}
-                    </div>
-                    <div className="flex flex-col items-start h-min gap-6">
-                        {REVIEWS.slice(6, 9).map((review, index) => (
-                            <AnimationContainer delay={0.2 * index} key={index}>
-                                <MagicCard key={index} className="md:p-0">
-                                    <Card className="flex flex-col w-full border-none h-min">
-                                        <CardHeader className="space-y-0">
-                                            <CardTitle className="text-lg font-medium text-muted-foreground">
-                                                {review.name}
-                                            </CardTitle>
-                                            <CardDescription>
-                                                {review.username}
-                                            </CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4 pb-4">
-                                            <p className="text-muted-foreground">
-                                                {review.review}
-                                            </p>
-                                        </CardContent>
-                                        <CardFooter className="w-full space-x-1 mt-auto">
-                                            {Array.from({ length: review.rating }, (_, i) => (
-                                                <StarIcon key={i} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                                            ))}
-                                        </CardFooter>
-                                    </Card>
-                                </MagicCard>
-                            </AnimationContainer>
-                        ))}
-                    </div>
-                </div>
-            </MaxWidthWrapper>
 
             {/* CTA Section */}
             <MaxWidthWrapper className="mt-20 max-w-[100vw] overflow-x-hidden scrollbar-hide">
@@ -309,15 +255,17 @@ const HomePage = async () => {
                     <LampContainer>
                         <div className="flex flex-col items-center justify-center relative w-full text-center">
                             <h2 className="bg-gradient-to-b from-neutral-200 to-neutral-400 py-4 bg-clip-text text-center text-4xl md:text-7xl !leading-[1.15] font-medium font-heading tracking-tight text-transparent mt-8">
-                                Step into the future of link management
+                                Secure AI for every team
                             </h2>
                             <p className="text-muted-foreground mt-6 max-w-md mx-auto">
-                                Experience the cutting-edge solution that transforms how you handle your links. Elevate your online presence with our next-gen platform.
+                                Jailbreak & prompt-injection protection at the gateway.
                             </p>
                             <div className="mt-6">
-                                <Button>
-                                    Get started for free
-                                    <ArrowRightIcon className="w-4 h-4 ml-2" />
+                                <Button asChild>
+                                    <Link href={user ? "/dashboard" : "/auth/sign-in"}>
+                                        Get started for free
+                                        <ArrowRightIcon className="w-4 h-4 ml-2" />
+                                    </Link>
                                 </Button>
                             </div>
                         </div>

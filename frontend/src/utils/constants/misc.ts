@@ -1,4 +1,4 @@
-import { BarChart3Icon, FolderOpenIcon, WandSparklesIcon } from "lucide-react";
+import { PlugIcon, ShieldCheckIcon, ZapIcon } from "lucide-react";
 
 export const DEFAULT_AVATAR_URL = "https://api.dicebear.com/8.x/initials/svg?backgroundType=gradientLinear&backgroundRotation=0,360&seed=";
 
@@ -33,19 +33,19 @@ export const COMPANIES = [
 
 export const PROCESS = [
     {
-        title: "Organize Your Links",
-        description: "Efficiently categorize and tag your links for quick access and easy management.",
-        icon: FolderOpenIcon,
+        title: "Route through the gateway",
+        description: "Send all your app-to-LLM traffic through a single gateway so every request is inspected and controlled.",
+        icon: PlugIcon,
     },
     {
-        title: "Shorten and Customize",
-        description: "Create concise, branded links that are easy to share and track.",
-        icon: WandSparklesIcon,
+        title: "Enforce policies & block threats",
+        description: "Custom rules and threat detection stop jailbreaks and prompt injection before they reach the model.",
+        icon: ShieldCheckIcon,
     },
     {
-        title: "Analyze and Optimize",
-        description: "Gain insights into link performance and optimize for better engagement.",
-        icon: BarChart3Icon,
+        title: "Fast, secure responses",
+        description: "Cached answers in milliseconds when possible; otherwise clean, policy-compliant responses to your app.",
+        icon: ZapIcon,
     },
 ] as const;
 

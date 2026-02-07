@@ -1,4 +1,4 @@
-import { HelpCircleIcon, LineChartIcon, Link2Icon, LockIcon, NewspaperIcon, QrCodeIcon } from "lucide-react";
+import { FileCheckIcon, HelpCircleIcon, PlugIcon, ShieldAlertIcon, ZapIcon } from "lucide-react";
 
 export const NAV_LINKS = [
     {
@@ -6,28 +6,28 @@ export const NAV_LINKS = [
         href: "/features",
         menu: [
             {
-                title: "Link Shortening",
-                tagline: "Shorten links and track their performance.",
-                href: "/features/link-shortening",
-                icon: Link2Icon,
+                title: "Threat prevention",
+                tagline: "Block jailbreak and prompt-injection at the gateway.",
+                href: "/features",
+                icon: ShieldAlertIcon,
             },
             {
-                title: "Password Protection",
-                tagline: "Secure your links with a password.",
-                href: "/features/password-protection",
-                icon: LockIcon,
+                title: "Custom policy enforcement",
+                tagline: "Your rules and vector DB—block or allow by content.",
+                href: "/features",
+                icon: FileCheckIcon,
             },
             {
-                title: "Advanced Analytics",
-                tagline: "Gain insights into who is clicking your links.",
-                href: "/features/analytics",
-                icon: LineChartIcon,
+                title: "Latency reduction",
+                tagline: "Cached responses in ~20ms. Lower cost, faster UX.",
+                href: "/features",
+                icon: ZapIcon,
             },
             {
-                title: "Custom QR Codes",
-                tagline: "Use QR codes to reach your audience.",
-                href: "/features/qr-codes",
-                icon: QrCodeIcon,
+                title: "Integrations",
+                tagline: "One gateway between your apps and AI providers.",
+                href: "/features",
+                icon: PlugIcon,
             },
         ],
     },
@@ -43,12 +43,7 @@ export const NAV_LINKS = [
         title: "Resources",
         href: "/resources",
         menu: [
-            {
-                title: "Blog",
-                tagline: "Read articles on the latest trends in tech.",
-                href: "/resources/blog",
-                icon: NewspaperIcon,
-            },
+
             {
                 title: "Help",
                 tagline: "Get answers to your questions.",

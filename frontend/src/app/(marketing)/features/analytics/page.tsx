@@ -26,11 +26,7 @@ const AnalyticsPage = () => {
                                     Get started
                                 </Link>
                             </Button>
-                            <Button size="sm" variant="outline" asChild>
-                                <Link href="/blog">
-                                    Learn more
-                                </Link>
-                            </Button>
+ 
                         </div>
                     </div>
                 </AnimationContainer>
