@@ -11,7 +11,6 @@ docker-compose up
 ```
 
 - **Redacted:** http://localhost:3000  
-- **Redacted frontend (Vite):** http://localhost:5173  
 - **Backend:** http://localhost:8000  
 
 MongoDB for Redacted runs automatically in Docker (port 27017). No local MongoDB install required.
