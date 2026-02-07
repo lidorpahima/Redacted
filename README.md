@@ -98,15 +98,8 @@ python scripts/ingest.py
 uvicorn app.main:app --reload
 ```
 
-#### 3. Setup Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-#### 4. Access the Application
-* **Frontend:** http://localhost:5173
+#### 3. Access the Application
+* **Redacted (UI):** http://localhost:3000 – see [REDACTED.md](./REDACTED.md) to run
 * **Backend API:** http://localhost:8000
 * **API Docs:** http://localhost:8000/docs
 
@@ -131,21 +124,6 @@ npm run dev
 
 ```
 llm-security-gateway/
-│
-├── frontend/                  # React Application
-│   ├── src/
-│   │   ├── components/        # UI Components
-│   │   │   ├── Chat/          # The Chat Interface
-│   │   │   ├── Analysis/      # The "Under the Hood" visualization
-│   │   │   └── Dashboard/     # Layouts
-│   │   ├── stores/            # Zustand stores (useSecurityStore.ts)
-│   │   ├── hooks/             # Custom React Hooks
-│   │   ├── api/               # Axios instances & endpoints
-│   │   └── types/             # TypeScript interfaces
-│   ├── public/
-│   ├── index.html
-│   ├── tailwind.config.js
-│   └── package.json
 │
 ├── backend/                   # Python FastAPI Application
 │   ├── app/
@@ -332,12 +310,7 @@ docker build -t redacted-api .
 
 2. Push to ECR and deploy with AWS Lambda
 
-3. Frontend: Deploy to S3 + CloudFront
-```bash
-cd frontend
-npm run build
-aws s3 sync dist/ s3://your-bucket-name
-```
+3. Redacted (Next.js): Deploy to Vercel, or build and serve with `npm run build && npm start` behind your host.
 
 ---
 
