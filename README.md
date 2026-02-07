@@ -1,7 +1,7 @@
-# 🛡️ LLM-Shield: Dynamic RAG Security Gateway
+# 🛡️ Redacted: Dynamic RAG Security Gateway
 
 **A Full-Stack AI Security Platform utilizing RAG to validate LLM inputs against organizational policies.**
-
+> Keep your AI conversations ████████
 ![Project Status](https://img.shields.io/badge/Status-Active_Development-green)
 ![Stack](https://img.shields.io/badge/Stack-React_|_FastAPI_|_LangChain_|_AWS-blue)
 
@@ -9,7 +9,7 @@
 
 ## 🎯 Project Overview
 
-LLM-Shield is a **Semantic Firewall** for Large Language Models. Unlike traditional security tools that rely on static keywords (Regex), LLM-Shield uses **RAG (Retrieval Augmented Generation)** to dynamically fetch security policies and validate user prompts against them in real-time.
+Redacted is a **Semantic Firewall** for Large Language Models. Unlike traditional security tools that rely on static keywords (Regex), Redacted uses **RAG (Retrieval Augmented Generation)** to dynamically fetch security policies and validate user prompts against them in real-time.
 
 **The Problem:** Static filters cannot understand context or evolving company policies.
 **The Solution:** A dynamic guardrail system that "reads" the company's rulebook before approving any request.
@@ -80,8 +80,8 @@ graph LR
 
 #### 1. Clone the repository
 ```bash
-git clone https://github.com/Lidorpahima/llm-shield.git
-cd llm-shield
+git clone <your-repo-url>
+cd llm-security-gateway
 ```
 
 #### 2. Setup Backend
@@ -110,12 +110,27 @@ npm run dev
 * **Backend API:** http://localhost:8000
 * **API Docs:** http://localhost:8000/docs
 
+### Redacted (Link management)
+
+The project also includes **Redacted** – a link management platform (shortening, analytics, custom links). The frontend lives in the `redacted/` folder.
+
+For detailed setup and run instructions, see **[REDACTED.md](./REDACTED.md)**. Quick start:
+
+```bash
+cd redacted
+npm install
+# Configure .env (Clerk, MongoDB) – see redacted/.env.example
+npm run dev
+```
+
+→ **http://localhost:3000**
+
 ---
 
 ## 📂 Project Structure
 
 ```
-llm-shield/
+llm-security-gateway/
 │
 ├── frontend/                  # React Application
 │   ├── src/
@@ -164,6 +179,11 @@ llm-shield/
 │
 ├── infra/                     # Infrastructure as Code (Optional/Future)
 │   └── aws/                   # Terraform or CDK files
+│
+├── redacted/                  # Redacted – Link management (Next.js)
+│   ├── src/
+│   ├── prisma/
+│   └── package.json
 │
 ├── docker-compose.yml         # Run everything locally
 └── README.md
@@ -284,7 +304,7 @@ if "password" in prompt.lower():
 ```
 **Problem:** Doesn't understand context. Blocks legitimate questions like "How do I reset my password?"
 
-### LLM-Shield Approach (Dynamic RAG)
+### Redacted Approach (Dynamic RAG)
 ```python
 # New way: Context-aware
 retrieved_policies = vector_db.search(prompt)
@@ -307,7 +327,7 @@ docker-compose up
 cd backend
 (python3 -m uvicorn main:app --reload)
 or
-docker build -t llm-shield-api .
+docker build -t redacted-api .
 ```
 
 2. Push to ECR and deploy with AWS Lambda

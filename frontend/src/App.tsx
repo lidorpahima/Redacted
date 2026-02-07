@@ -17,7 +17,7 @@ function App() {
           <div className="flex items-center gap-3">
             <div className="text-2xl">🛡️</div>
             <div>
-              <h1 className="text-xl font-bold text-white">LLM-Shield</h1>
+              <h1 className="text-xl font-bold text-white">Redacted</h1>
               <p className="text-sm text-gray-400">Dynamic RAG Security Gateway</p>
             </div>
           </div>
@@ -70,7 +70,7 @@ function App() {
 
       {/* Footer */}
       <footer className="border-t border-dark-border px-6 py-3 text-center text-sm text-gray-500">
-        LLM-Shield v0.1.0 | Built with React + FastAPI + LangChain
+        Redacted v0.1.0 | Built with React + FastAPI + LangChain
       </footer>
     </div>
   )
