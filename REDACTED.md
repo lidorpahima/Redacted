@@ -1,7 +1,7 @@
-# Redacted - AI Security Gateway Platform
+# Frontend - AI Security Gateway Platform
 
 ## Product Overview
-Redacted is an enterprise AI security platform that acts as a protective middleware layer between users and AI models (OpenAI, Claude, Gemini, etc.). We sit in the middle of every AI request to prevent data leakage, block jailbreak attempts, reduce costs, and provide complete visibility into AI usage.
+Frontend is an enterprise AI security platform that acts as a protective middleware layer between users and AI models (OpenAI, Claude, Gemini, etc.). We sit in the middle of every AI request to prevent data leakage, block jailbreak attempts, reduce costs, and provide complete visibility into AI usage.
 
 ## The Three Core Functions
 
@@ -39,7 +39,7 @@ Organizations use AI tools (ChatGPT, Claude, MCP agents, custom LLMs) with their
 - Malicious actors try to extract proprietary information
 - No visibility into what data is being shared
 
-**Redacted's Solution:**
+**Frontend's Solution:**
 We intercept every request, scan for sensitive data (API keys, credentials, PII), and either:
 - **Block** the request entirely if it contains secrets
 - **Redact** sensitive parts before forwarding to the AI
@@ -48,7 +48,7 @@ We intercept every request, scan for sensitive data (API keys, credentials, PII)
 
 ## Technical Architecture
 ```
-User/Employee → Redacted Gateway (FastAPI) → AI Model (OpenAI/Claude/etc)
+User/Employee → Frontend Gateway (FastAPI) → AI Model (OpenAI/Claude/etc)
                       ↓
               [Security Checks]
               • PII Scanner
@@ -66,7 +66,7 @@ Design the "How It Works" / "Features" section that explains our three core capa
 
 ### Requirements for the Features Section:
 
-1. **Section Title**: Something like "Three Layers of Protection" or "How Redacted Secures Your AI"
+1. **Section Title**: Something like "Three Layers of Protection" or "How Frontend Secures Your AI"
 
 2. **Visual Style**: 
    - Dark theme (black/dark gray backgrounds)
@@ -108,7 +108,7 @@ Design the "How It Works" / "Features" section that explains our three core capa
    - Use technical but accessible language
 
 6. **Visual Elements to Consider**:
-   - Animated flow diagram showing: User → Redacted → AI Model
+   - Animated flow diagram showing: User → Frontend → AI Model
    - Code snippets or terminal-style text showing blocked threats
    - Mini charts/graphs showing cost savings or threat detection
    - "████" redacted text styling where appropriate

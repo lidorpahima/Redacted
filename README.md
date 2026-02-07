@@ -2,6 +2,7 @@
 
 **A Full-Stack AI Security Platform utilizing RAG to validate LLM inputs against organizational policies.**
 > Keep your AI conversations ████████
+
 ![Project Status](https://img.shields.io/badge/Status-Active_Development-green)
 ![Stack](https://img.shields.io/badge/Stack-React_|_FastAPI_|_LangChain_|_AWS-blue)
 

@@ -14,26 +14,26 @@ services:
       - ./backend:/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-  # --- Redacted - Next.js on 3000 ---
-  redacted:
+  # --- Frontend - Next.js on 3000 ---
+  frontend:
     build:
-      context: ./redacted
+      context: ./frontend
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     env_file:
-      - ./redacted/.env
+      - ./frontend/.env
     environment:
-      - DATABASE_URL=mongodb://mongodb:27017/redacted
+      - DATABASE_URL=mongodb://mongodb:27017/frontend
       - NEXT_PUBLIC_APP_DOMAIN=http://localhost:3000
     volumes:
-      - ./redacted:/app
-      - redacted_node_modules:/app/node_modules
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
     depends_on:
       - mongodb
     command: sh -c "npm install && npx prisma generate && npm run dev -- --hostname 0.0.0.0"
 
-  # --- MongoDB (for Redacted) ---
+  # --- MongoDB (for Frontend) ---
   mongodb:
     image: mongo:7
     ports:
@@ -51,4 +51,4 @@ services:
 volumes:
   redis_data:
   mongodb_data:
-  redacted_node_modules:
+  frontend_node_modules:
