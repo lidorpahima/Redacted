@@ -1,55 +1,94 @@
-# LLM Security Gateway
+<div align="center">
 
-**Enterprise AI Security Middleware** — a smart API gateway that sits between your applications and LLM providers. Every request is inspected for threats (jailbreak, PII, policy violations) before reaching the model.
+# 🔐 Redacted
 
-> Connect your API key and model → get a **gateway key** → use it in your app. We handle security, routing, and monitoring.
+### Enterprise AI Security Gateway
+
+<br/>
+
+[![Next.js](https://img.shields.io/badge/Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com/)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com/)
+[![LangChain](https://img.shields.io/badge/🦜_LangChain-1C3C3C?style=for-the-badge)](https://langchain.com/)
+
+<br/>
+
+**A smart API gateway that sits between your apps and LLM providers.**
+**Every request is inspected for threats before reaching the model.**
+
+<br/>
+
+[🚀 Quick Start](#-getting-started) · [📐 Architecture](#-architecture-overview) · [🔑 API Docs](#-backend-api) · [🤖 MCP Integration](#-mcp-integration-claude-desktop)
+
+<br/>
 
 ```
-Your App ──▶ Security Gateway ──▶ OpenAI / Gemini / Claude / Grok / 100+ models
-                  │
-            ┌─────┴─────┐
-            │  Guardrail │
-            │  Engine    │
-            └────────────┘
-         Jailbreak · PII · Policy
+  Your App ──▶ 🔐 Redacted Gateway ──▶ OpenAI / Gemini / Claude / Grok / 100+ models
+                       │
+                 ┌─────┴──────┐
+                 │  🛡️ Guardrail │
+                 │    Engine    │
+                 └─────────────┘
+              Jailbreak · PII · Policy
 ```
+
+</div>
 
 ---
 
-## Architecture Overview
+## ✨ How It Works
+
+> **Connect** your API key & model → **Get** a gateway key → **Use** it in your app. We handle the rest.
+
+| Step | What happens |
+|:----:|:-------------|
+| **1** | 👤 You log into the Dashboard, pick a provider (OpenAI, Gemini, Claude…) and enter your real API key |
+| **2** | 🔑 Redacted generates a **gateway key** `sk-redacted-xyz...` — your real key is never exposed |
+| **3** | 📱 Your app sends requests to Redacted with the gateway key |
+| **4** | 🛡️ Every message is scanned — jailbreak, PII, policy violations — before it touches the LLM |
+| **5** | ✅ Safe requests are forwarded to the provider. Threats are blocked instantly |
+
+---
+
+## 📐 Architecture Overview
 
 The system is split into two planes:
 
-- **Control Plane** (Next.js) — where you configure providers, keys, and policies via the Dashboard.
-- **Data Plane** (Python/FastAPI) — where real-time traffic is inspected, routed, and proxied.
+> 🟢 **Control Plane** (Next.js) — configure providers, keys, and policies via the Dashboard
+>
+> 🟣 **Data Plane** (Python/FastAPI) — real-time traffic inspection, routing, and proxying
 
 ```mermaid
 graph LR
-    subgraph Control Plane
+    subgraph CP["🟢 Control Plane"]
         Dashboard["📊 Dashboard<br/><i>Next.js · Clerk</i>"]
         DB["🗄️ MongoDB<br/><i>Prisma ORM</i>"]
     end
 
-    subgraph Data Plane
+    subgraph DP["🟣 Data Plane"]
         Gateway["🛡️ Security Gateway<br/><i>FastAPI</i>"]
         Guard["🔒 Guardrail Engine<br/><i>LangChain · ChromaDB</i>"]
         Router["🔌 LiteLLM Router<br/><i>100+ Models</i>"]
         Cache["⚡ Cache<br/><i>In-Memory → Redis</i>"]
     end
 
-    Client["👨‍💻 Client App"] -->|X-API-Key| Gateway
-    Gateway -->|analyze| Guard
-    Guard -->|RAG query| ChromaDB["📚 Policy Store<br/><i>ChromaDB</i>"]
-    Gateway -->|if safe| Router
-    Router -->|completion| Providers["☁️ LLM Providers<br/><i>OpenAI · Gemini · Claude · Grok</i>"]
-    Providers -->|response| Client
+    Client["👨‍💻 Client App"] -->|"🔑 X-API-Key"| Gateway
+    Gateway -->|"🔍 analyze"| Guard
+    Guard -->|"📚 RAG query"| ChromaDB["📚 Policy Store<br/><i>ChromaDB</i>"]
+    Gateway -->|"✅ if safe"| Router
+    Router -->|"☁️ completion"| Providers["☁️ LLM Providers<br/><i>OpenAI · Gemini · Claude · Grok</i>"]
+    Providers -->|"📨 response"| Client
 
-    Dashboard -->|register-key| Gateway
-    Dashboard -->|CRUD| DB
-    Gateway -->|resolve key| Cache
-    Cache -.->|fallback| DB
+    Dashboard -->|"📝 register-key"| Gateway
+    Dashboard -->|"💾 CRUD"| DB
+    Gateway -->|"⚡ resolve key"| Cache
+    Cache -.->|"🔄 fallback"| DB
 
-    MCP["🤖 MCP<br/><i>Claude Desktop</i>"] -->|/scan| Gateway
+    MCP["🤖 MCP<br/><i>Claude Desktop</i>"] -->|"🔍 /scan"| Gateway
 
     style Gateway fill:#1e1b4b,stroke:#6366f1,color:#e2e8f0
     style Guard fill:#2d1515,stroke:#f87171,color:#e2e8f0
@@ -65,40 +104,49 @@ graph LR
 
 ---
 
-## Setup Flow (Key Registration)
+## ⚙️ Setup Flow — Key Registration
 
-This happens once, when a user logs into the Dashboard and connects a provider.
+> _This happens once, when a user logs into the Dashboard and connects a provider._
 
 ```mermaid
 sequenceDiagram
-    actor User
+    actor User as 👤 User
     participant Dashboard as 📊 Dashboard<br/>Next.js
     participant DB as 🗄️ MongoDB<br/>Prisma
     participant Backend as ⚡ FastAPI<br/>Backend
     participant Mem as 🧠 In-Memory<br/>Cache
 
-    User->>Dashboard: Select provider + model + enter API key
-    Dashboard->>Dashboard: Generate sk-redacted-xyz...
-    Dashboard->>DB: Store gateway_key ↔ provider + model + real_key
-    Dashboard->>Backend: POST /register-key
-    Backend->>Mem: Cache mapping for instant lookup
-    Dashboard-->>User: Show gateway key (once!)
+    User->>Dashboard: 1️⃣ Select provider + model + enter API key
+    Dashboard->>Dashboard: 2️⃣ Generate sk-redacted-xyz...
+    Dashboard->>DB: 3️⃣ Store gateway_key ↔ provider + model + real_key
+    Dashboard->>Backend: 4️⃣ POST /register-key
+    Backend->>Mem: 5️⃣ Cache mapping for instant lookup
+    Dashboard-->>User: 6️⃣ Show gateway key (once! 🔐)
 
-    Note over User,Mem: The real API key is never exposed.<br/>User only sees sk-redacted-xyz.
+    Note over User,Mem: 🔒 The real API key is never exposed.<br/>User only sees sk-redacted-xyz.
 ```
 
-**Step by step:**
+<details>
+<summary>📋 <b>Step by step breakdown</b></summary>
 
-1. **User** logs into Dashboard, selects a provider (e.g. Google Gemini), enters their real API key, chooses a model.
-2. **Next.js** generates a virtual gateway key `sk-redacted-xyz...` and stores the mapping in MongoDB.
-3. **Sync** — Next.js sends `POST /register-key` to FastAPI. The backend caches the key in RAM.
-4. **Done** — User copies the gateway key. The real key is never exposed.
+<br/>
+
+| # | Component | What happens |
+|:-:|:---------:|:-------------|
+| 1️⃣ | 👤 **User** | Logs into Dashboard, selects a provider (e.g. Google Gemini), enters their real API key, chooses a model |
+| 2️⃣ | ▲ **Next.js** | Generates a virtual gateway key `sk-redacted-xyz...` |
+| 3️⃣ | 🗄️ **MongoDB** | Stores the mapping: `gateway_key ↔ provider + model + real_api_key` |
+| 4️⃣ | ⚡ **FastAPI** | Receives `POST /register-key` from Next.js |
+| 5️⃣ | 🧠 **Cache** | Key mapping saved in RAM for instant resolution |
+| 6️⃣ | 🔑 **Gateway Key** | Shown once to the user — the real key is never exposed |
+
+</details>
 
 ---
 
-## Runtime Flow (Request Processing)
+## ⚡ Runtime Flow — Request Processing
 
-This is the critical path — what happens when your app sends a request. Must be fast.
+> _The critical path — what happens when your app sends a request. Must be fast._
 
 ```mermaid
 sequenceDiagram
@@ -110,62 +158,69 @@ sequenceDiagram
     participant Adapt as 🔌 LiteLLM<br/>Adapter
     participant LLM as ☁️ LLM Provider
 
-    Client->>GW: POST /v1/chat/completions<br/>X-API-Key: sk-redacted-xyz
-    GW->>Auth: Who is sk-redacted-xyz?
-    Auth-->>GW: Google Gemini · gemini-2.5-pro
+    Client->>GW: POST /v1/chat/completions<br/>🔑 X-API-Key: sk-redacted-xyz
+    GW->>Auth: Who is sk-redacted-xyz? 🤔
+    Auth-->>GW: ✅ Google Gemini · gemini-2.5-pro
 
     rect rgb(45, 21, 21)
-        Note over GW,Chroma: 🛡️ Security Checkpoint
-        GW->>Guard: Analyze user message
-        Guard->>Chroma: Similarity search (top 2 policies)
-        Chroma-->>Guard: Relevant policy chunks
-        Guard-->>GW: SecurityAssessment
+        Note over GW,Chroma: 🛡️ SECURITY CHECKPOINT
+        GW->>Guard: 🔍 Analyze user message
+        Guard->>Chroma: 📚 Similarity search (top 2 policies)
+        Chroma-->>Guard: 📄 Relevant policy chunks
+        Guard-->>GW: 📊 SecurityAssessment
     end
 
-    alt 🔴 Unsafe
-        GW-->>Client: 400 — Blocked by Security Gateway
-    else 🟢 Safe
-        GW->>Adapt: Translate model name
-        Adapt->>LLM: completion() with real API key
-        LLM-->>Adapt: Model response
-        Adapt-->>GW: Response
-        GW-->>Client: Response + "Security Check: Passed"
+    alt 🔴 THREAT DETECTED
+        GW-->>Client: ❌ 400 — Blocked by Redacted
+    else 🟢 ALL CLEAR
+        GW->>Adapt: 🔌 Translate model name
+        Adapt->>LLM: ☁️ completion() with real API key
+        LLM-->>Adapt: 💬 Model response
+        Adapt-->>GW: 📨 Response
+        GW-->>Client: ✅ Response + "Security Check: Passed"
     end
 ```
 
-**Step by step:**
+<details>
+<summary>📋 <b>Step by step breakdown</b></summary>
 
-1. **Ingress** — Client sends request to `/v1/chat/completions` with `X-API-Key: sk-redacted-xyz`.
-2. **Auth** — FastAPI checks in-memory cache: resolves to provider + model + real API key.
-3. **Guardrail** — LangChain runs security analysis: prompt injection, PII detection, policy check via RAG.
-4. **Decision** — `🔴 Unsafe` → returns 400 (saves money). `🟢 Safe` → continues.
-5. **Adapter** — Translates model name for LiteLLM (e.g. `google/gemini-2.5-pro` → `gemini/gemini-2.5-pro`).
-6. **Upstream** — LiteLLM sends request to the real provider with the customer's API key.
-7. **Response** — Provider returns → Gateway stamps "Security Check: Passed" → forwards to client.
+<br/>
+
+| # | Phase | What happens |
+|:-:|:-----:|:-------------|
+| 1️⃣ | 📥 **Ingress** | Client sends request to `/v1/chat/completions` with `X-API-Key: sk-redacted-xyz` |
+| 2️⃣ | 🔑 **Auth** | FastAPI checks in-memory cache → resolves to provider + model + real API key |
+| 3️⃣ | 🛡️ **Guardrail** | LangChain runs: prompt injection ⚠️ + PII detection 🔍 + policy check 📋 via RAG |
+| 4️⃣ | ⚖️ **Decision** | 🔴 Unsafe → returns 400 (saves cost!) · 🟢 Safe → continues |
+| 5️⃣ | 🔌 **Adapter** | Translates model name for LiteLLM (e.g. `google/gemini-2.5-pro` → `gemini/gemini-2.5-pro`) |
+| 6️⃣ | ☁️ **Upstream** | LiteLLM sends request to the real provider with the customer's API key |
+| 7️⃣ | 📨 **Response** | Provider returns → Gateway stamps ✅ "Security Check: Passed" → forwards to client |
+
+</details>
 
 ---
 
-## Security Engine (Guardrail Layer)
+## 🛡️ Security Engine — Guardrail Layer
 
-The brain of the security system. Uses RAG to enforce company policies dynamically.
+> _The brain of the security system. Uses RAG to enforce company policies dynamically._
 
 ```mermaid
 graph TB
     Input["📝 User Message"] --> Guard["🔒 Guardrail Engine"]
 
-    Guard --> PII["🔍 PII Detection<br/><i>Credit cards, SSN, passwords</i>"]
-    Guard --> Jailbreak["⚠️ Prompt Injection<br/><i>'Ignore all instructions'</i>"]
-    Guard --> Policy["📋 Policy Check<br/><i>RAG-based enforcement</i>"]
+    Guard --> PII["🔍 PII Detection<br/><i>💳 Credit cards · 🔐 SSN · 🔑 Passwords</i>"]
+    Guard --> Jailbreak["⚠️ Prompt Injection<br/><i>🚫 'Ignore all instructions'</i>"]
+    Guard --> Policy["📋 Policy Check<br/><i>📚 RAG-based enforcement</i>"]
 
-    Policy --> ChromaDB["📚 ChromaDB<br/><i>Vector similarity search</i>"]
-    ChromaDB --> Policies["📄 Company Policies<br/><i>Data Privacy · HR · Security</i>"]
+    Policy --> ChromaDB["📚 ChromaDB<br/><i>🔎 Vector similarity search</i>"]
+    ChromaDB --> Policies["📄 Company Policies<br/><i>🔒 Data Privacy · 👥 HR · 🛡️ Security</i>"]
 
-    PII --> Decision{Decision}
+    PII --> Decision{"⚖️ Decision"}
     Jailbreak --> Decision
     Policy --> Decision
 
-    Decision -->|"🔴 Risk > Threshold"| Block["❌ Block Request<br/><i>400 + reason</i>"]
-    Decision -->|"🟢 Safe"| Pass["✅ Forward to LLM"]
+    Decision -->|"🔴 Risk > Threshold"| Block["❌ BLOCK<br/><i>400 + reason</i>"]
+    Decision -->|"🟢 All Clear"| Pass["✅ FORWARD<br/><i>→ LLM Provider</i>"]
 
     style Guard fill:#1e1b4b,stroke:#6366f1,color:#e2e8f0
     style Block fill:#2d1515,stroke:#f87171,color:#e2e8f0
@@ -174,7 +229,10 @@ graph TB
     style ChromaDB fill:#1a2332,stroke:#60a5fa,color:#e2e8f0
 ```
 
-The guardrail returns a `SecurityAssessment`:
+<details>
+<summary>💡 <b>Example SecurityAssessment response</b></summary>
+
+<br/>
 
 ```json
 {
@@ -185,20 +243,22 @@ The guardrail returns a `SecurityAssessment`:
 }
 ```
 
+</details>
+
 ---
 
-## MCP Integration (Claude Desktop)
+## 🤖 MCP Integration (Claude Desktop)
 
-The gateway integrates with Claude Desktop via the Model Context Protocol, allowing Claude to use the security scanner as a tool.
+> _Redacted integrates with Claude Desktop via the Model Context Protocol — Claude can use the security scanner as a tool._
 
 ```mermaid
 graph LR
-    Claude["🤖 Claude Desktop"] -->|MCP Protocol| Agent["agent_tool.py<br/><i>MCP Server</i>"]
-    Agent -->|"POST /scan<br/>X-API-Key"| Backend["🛡️ Gateway<br/><i>FastAPI</i>"]
-    Backend -->|analyze| Guard["🔒 Guardrail"]
-    Guard -->|result| Backend
-    Backend -->|"SAFE / BLOCKED"| Agent
-    Agent -->|result| Claude
+    Claude["🤖 Claude Desktop"] -->|"🔗 MCP Protocol"| Agent["⚙️ agent_tool.py<br/><i>MCP Server</i>"]
+    Agent -->|"📡 POST /scan<br/>🔑 X-API-Key"| Backend["🛡️ Redacted Gateway<br/><i>FastAPI</i>"]
+    Backend -->|"🔍 analyze"| Guard["🔒 Guardrail"]
+    Guard -->|"📊 result"| Backend
+    Backend -->|"✅ SAFE / ❌ BLOCKED"| Agent
+    Agent -->|"💬 result"| Claude
 
     style Claude fill:#1e1b4b,stroke:#a78bfa,color:#e2e8f0
     style Backend fill:#1e1b4b,stroke:#6366f1,color:#e2e8f0
@@ -207,29 +267,29 @@ graph LR
 
 ---
 
-## Tech Stack
+## 🧰 Tech Stack
 
 ```mermaid
 graph TB
-    subgraph Frontend
+    subgraph "🖥️ Frontend"
         Next["▲ Next.js 14<br/><i>App Router · Server Actions</i>"]
         Clerk["🔐 Clerk<br/><i>Auth · OAuth</i>"]
         Tailwind["🎨 Tailwind + Radix UI<br/><i>60+ Components</i>"]
     end
 
-    subgraph Backend
+    subgraph "⚙️ Backend"
         FastAPI["⚡ FastAPI<br/><i>Uvicorn · Async</i>"]
         LangChain["🛡️ LangChain<br/><i>Security Logic · RAG</i>"]
         LiteLLM["🔌 LiteLLM<br/><i>100+ Model Adapter</i>"]
     end
 
-    subgraph Data
+    subgraph "💾 Data"
         MongoDB["🗄️ MongoDB<br/><i>Prisma ORM</i>"]
         ChromaDB["📚 ChromaDB<br/><i>Vector Embeddings</i>"]
         Redis["🚀 Redis<br/><i>Caching Layer</i>"]
     end
 
-    subgraph Infra
+    subgraph "🏗️ Infrastructure"
         Docker["🐳 Docker Compose<br/><i>4 Services</i>"]
         MCP["🤖 MCP<br/><i>Claude Desktop</i>"]
     end
@@ -250,76 +310,77 @@ graph TB
     style Redis fill:#2d1a00,stroke:#fb923c,color:#e2e8f0
 ```
 
-| Component | Technology | Role |
-|-----------|-----------|------|
-| Frontend | Next.js 14 + Tailwind + Radix UI | Dashboard, key management, analytics |
-| Auth | Clerk | OAuth, user management, protected routes |
-| Backend | Python (FastAPI + Uvicorn) | Real-time request processing |
-| Security | LangChain + ChromaDB | RAG-based guardrail, threat detection |
-| Routing | LiteLLM | Universal adapter for 100+ LLM models |
-| Database | MongoDB + Prisma | Users, API keys, audit logs |
-| Cache | In-Memory Dict → Redis | Sub-ms key resolution |
-| Infra | Docker Compose | One-command local deployment |
-| Integration | MCP (Model Context Protocol) | Claude Desktop tool |
+| | Component | Technology | Role |
+|:-:|:----------|:----------|:-----|
+| ▲ | **Frontend** | Next.js 14 + Tailwind + Radix UI | Dashboard, key management, analytics |
+| 🔐 | **Auth** | Clerk | OAuth, user management, protected routes |
+| ⚡ | **Backend** | Python (FastAPI + Uvicorn) | Real-time request processing |
+| 🛡️ | **Security** | LangChain + ChromaDB | RAG-based guardrail, threat detection |
+| 🔌 | **Routing** | LiteLLM | Universal adapter for 100+ LLM models |
+| 🗄️ | **Database** | MongoDB + Prisma | Users, API keys, audit logs |
+| 🚀 | **Cache** | In-Memory Dict → Redis | Sub-ms key resolution |
+| 🐳 | **Infra** | Docker Compose | One-command local deployment |
+| 🤖 | **Integration** | MCP (Model Context Protocol) | Claude Desktop tool |
 
 ---
 
-## Repo Structure
+## 📂 Repo Structure
 
 ```
-llm-security-gateway/
-├── backend/                    # FastAPI (Python)
+🔐 redacted/
+│
+├── 🐍 backend/                       # FastAPI (Python)
 │   ├── app/
-│   │   ├── main.py             # Core routes: /health, /scan, /register-key, /v1/chat/completions
+│   │   ├── main.py                   # 🚀 Core: /health, /scan, /register-key, /v1/chat/completions
 │   │   ├── chains/
-│   │   │   ├── guardrail.py    # Security analysis (LangChain + RAG)
-│   │   │   └── prompts.py      # System prompts for evaluation
+│   │   │   ├── guardrail.py          # 🛡️ Security analysis (LangChain + RAG)
+│   │   │   └── prompts.py            # 💬 System prompts for evaluation
 │   │   ├── core/
-│   │   │   └── config.py       # Settings (Pydantic)
+│   │   │   └── config.py             # ⚙️ Settings (Pydantic)
 │   │   └── services/
-│   │       ├── llm_provider.py # Provider abstraction
-│   │       └── vector_db.py    # ChromaDB / Pinecone
-│   ├── data/policies/          # Company policy documents for RAG
-│   ├── scripts/                # ingest.py, test_retrieval.py
+│   │       ├── llm_provider.py       # 🔌 Provider abstraction
+│   │       └── vector_db.py          # 📚 ChromaDB / Pinecone
+│   ├── data/policies/                # 📋 Company policy documents for RAG
+│   ├── scripts/                      # 🧪 ingest.py, test_retrieval.py
 │   ├── requirements.txt
 │   └── Dockerfile
 │
-├── frontend/                   # Next.js 14 (App Router)
+├── ▲ frontend/                       # Next.js 14 (App Router)
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── (marketing)/    # Landing, features, pricing, enterprise
-│   │   │   ├── (main)/         # Dashboard: overview, api-keys, logs, activity, settings
+│   │   │   ├── (marketing)/          # 🌐 Landing, features, pricing, enterprise
+│   │   │   ├── (main)/              # 📊 Dashboard: overview, api-keys, logs, activity, settings
 │   │   │   ├── api/
-│   │   │   │   ├── dashboard/  # API keys CRUD, list-models
-│   │   │   │   └── internal/   # resolve-key (backend ↔ frontend)
-│   │   │   └── auth/           # Clerk sign-in, sign-up, callback
-│   │   ├── components/         # UI (60+ Radix), dashboard, navigation
-│   │   ├── lib/                # Prisma client
-│   │   └── utils/              # Constants: providers, pricing, nav
-│   ├── prisma/schema.prisma    # MongoDB schema (User, ApiKey)
+│   │   │   │   ├── dashboard/        # 🔑 API keys CRUD, list-models
+│   │   │   │   └── internal/         # 🔄 resolve-key (backend ↔ frontend)
+│   │   │   └── auth/                 # 🔐 Clerk sign-in, sign-up, callback
+│   │   ├── components/               # 🎨 UI (60+ Radix), dashboard, navigation
+│   │   ├── lib/                      # 💾 Prisma client
+│   │   └── utils/                    # 📦 Constants: providers, pricing, nav
+│   ├── prisma/schema.prisma          # 🗄️ MongoDB schema (User, ApiKey)
 │   ├── package.json
 │   └── Dockerfile
 │
-├── docs/
-│   ├── MCP-SETUP.md            # Claude Desktop integration guide
+├── 📖 docs/
+│   ├── MCP-SETUP.md                  # 🤖 Claude Desktop integration guide
 │   └── claude_desktop_config.json.example
 │
-├── agent_tool.py               # MCP server for Claude Desktop
-├── docker-compose.yml          # backend, frontend, mongodb, redis
-├── .env.example
-└── README.md
+├── 🤖 agent_tool.py                  # MCP server for Claude Desktop
+├── 🐳 docker-compose.yml             # backend, frontend, mongodb, redis
+├── 📝 .env.example
+└── 📘 README.md
 ```
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
-### Prerequisites
+### 📋 Prerequisites
 
-- Docker and Docker Compose
-- (Optional) Node 18+ and Python 3.10+ for local dev without Docker
+> - 🐳 Docker and Docker Compose
+> - _(Optional)_ 📗 Node 18+ and 🐍 Python 3.10+ for local dev without Docker
 
-### 1. Clone and configure
+### 1️⃣ Clone and configure
 
 ```bash
 git clone <repo-url>
@@ -327,24 +388,24 @@ cd llm-security-gateway
 cp .env.example .env            # Set OPENROUTER_API_KEY, MODEL, EMBEDDING_MODEL
 ```
 
-### 2. Run
+### 2️⃣ Run
 
 ```bash
 docker-compose up --build
 ```
 
-| Service | URL |
-|---------|-----|
-| Frontend | http://localhost:3000 |
-| Backend API | http://localhost:8000 |
-| API Docs (Swagger) | http://localhost:8000/docs |
+| | Service | URL |
+|:-:|:--------|:----|
+| 🖥️ | Frontend | http://localhost:3000 |
+| ⚡ | Backend API | http://localhost:8000 |
+| 📖 | API Docs (Swagger) | http://localhost:8000/docs |
 
-### 3. First use
+### 3️⃣ First use
 
-1. Sign up at http://localhost:3000 (Clerk auth).
-2. Go to **Dashboard → API Keys**.
-3. Select provider → model → enter your API key → **Connect**.
-4. Copy the gateway key. Use it in your app:
+1. 🔐 Sign up at http://localhost:3000 (Clerk auth)
+2. 📊 Go to **Dashboard → API Keys**
+3. 🔌 Select provider → model → enter your API key → **Connect**
+4. 📋 Copy the gateway key. Use it in your app:
 
 ```bash
 curl -X POST http://localhost:8000/v1/chat/completions \
@@ -355,48 +416,56 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 
 ---
 
-## Backend API
+## 🔑 Backend API
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/health` | GET | Health check |
-| `/scan` | POST | Security scan on text (returns `is_safe`, `violated_rule`, `reason`, `risk_score`) |
-| `/register-key` | POST | Register gateway key mapping |
-| `/unregister-key` | POST | Remove gateway key |
-| `/v1/chat/completions` | POST | Main proxy — guardrail check → forward to LLM |
-| `/list-models` | POST | List available models from a provider |
+| | Endpoint | Method | Description |
+|:-:|:---------|:------:|:------------|
+| 💚 | `/health` | `GET` | Health check |
+| 🛡️ | `/scan` | `POST` | Security scan — returns `is_safe`, `violated_rule`, `reason`, `risk_score` |
+| 🔑 | `/register-key` | `POST` | Register gateway key mapping |
+| 🗑️ | `/unregister-key` | `POST` | Remove gateway key |
+| 🚀 | `/v1/chat/completions` | `POST` | **Main proxy** — guardrail check → forward to LLM |
+| 📋 | `/list-models` | `POST` | List available models from a provider |
 
-### Internal API (Frontend → Backend)
+<details>
+<summary>🔒 <b>Internal API (Frontend ↔ Backend)</b></summary>
+
+<br/>
 
 | Endpoint | Description |
-|----------|-------------|
+|:---------|:------------|
 | `GET /api/internal/resolve-key?key=<gateway_key>` | Resolve gateway key to provider + real API key + model. Protected by `Internal-Secret` header. |
 
----
-
-## Environment Variables
-
-| Variable | Where | Description |
-|----------|-------|-------------|
-| `OPENROUTER_API_KEY` | Root | API key for guardrail LLM (OpenRouter) |
-| `MODEL` | Root | Model for security analysis |
-| `EMBEDDING_MODEL` | Root | Model for policy embeddings |
-| `INTERNAL_API_SECRET` | Root | Secret for backend ↔ frontend internal API |
-| `DATABASE_URL` | Frontend | MongoDB connection string |
-| `NEXT_PUBLIC_API_URL` | Frontend | Backend URL (e.g. `http://localhost:8000`) |
-| `CLERK_SECRET_KEY` | Frontend | Clerk authentication |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Frontend | Clerk public key |
+</details>
 
 ---
 
-## License
+## 🔧 Environment Variables
+
+| | Variable | Where | Description |
+|:-:|:---------|:-----:|:------------|
+| 🤖 | `OPENROUTER_API_KEY` | Root | API key for guardrail LLM (OpenRouter) |
+| 🧠 | `MODEL` | Root | Model for security analysis |
+| 📊 | `EMBEDDING_MODEL` | Root | Model for policy embeddings |
+| 🔒 | `INTERNAL_API_SECRET` | Root | Secret for backend ↔ frontend internal API |
+| 🗄️ | `DATABASE_URL` | Frontend | MongoDB connection string |
+| 🔗 | `NEXT_PUBLIC_API_URL` | Frontend | Backend URL (e.g. `http://localhost:8000`) |
+| 🔐 | `CLERK_SECRET_KEY` | Frontend | Clerk authentication |
+| 🔑 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Frontend | Clerk public key |
+
+---
+
+<div align="center">
+
+## 📜 License
 
 MIT
 
 ---
 
-## Author
+**Built with ❤️ by [Lidor Pahima](https://linkedin.com/in/lidor-pahima)**
 
-**Lidor Pahima**
-- Email: lidorpahima28@gmail.com
-- LinkedIn: [linkedin.com/in/lidor-pahima](https://linkedin.com/in/lidor-pahima)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/lidor-pahima)
+[![Email](https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:lidorpahima28@gmail.com)
+
+</div>
