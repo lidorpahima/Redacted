@@ -4,8 +4,7 @@ import { prisma } from "@/lib/db";
 import { LLM_PROVIDERS, type ProviderId } from "@/utils/constants/providers";
 import crypto from "crypto";
 
-// Use || so empty string gets default; in Docker use http://backend:8000
-const BACKEND_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
+const BACKEND_URL = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
 const ADMIN_API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 
 function maskKey(key: string): string {
@@ -94,18 +93,29 @@ export async function POST(req: Request) {
             },
         });
         // Register key in backend so it can be used for auth (must match RegisterKeyRequest)
-        const registerRes = await fetch(`${BACKEND_URL}/register-key`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                gateway_key: gatewayKey,
-                provider: providerToStore,
-                model: modelStr,
-                target_api_key: customerApiKey.trim(),
-            }),
-        });
+        let registerRes: Response;
+        try {
+            registerRes = await fetch(`${BACKEND_URL}/register-key`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    gateway_key: gatewayKey,
+                    provider: providerToStore,
+                    model: modelStr,
+                    target_api_key: customerApiKey.trim(),
+                }),
+            });
+        } catch (fetchErr) {
+            await prisma.apiKey.delete({ where: { id: created.id } }).catch(() => {});
+            const msg = fetchErr instanceof Error && fetchErr.cause instanceof Error ? fetchErr.cause.message : String(fetchErr);
+            const isUnreachable = /ECONNREFUSED|ETIMEDOUT|ENOTFOUND/i.test(msg);
+            throw new Error(
+                isUnreachable
+                    ? "Gateway backend is unavailable. Check that the backend container is running (e.g. docker-compose up backend)."
+                    : msg
+            );
+        }
         if (!registerRes.ok) {
-            // Rollback: delete from DB so we don't have orphan key
             await prisma.apiKey.delete({ where: { id: created.id } }).catch(() => {});
             const text = await registerRes.text();
             throw new Error(text || "Backend failed to register key");

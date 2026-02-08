@@ -1,16 +1,16 @@
-/** 10 most used LLM providers + Other for custom. */
+/** LLM providers + Other for custom. */
 export const LLM_PROVIDERS = [
-    { id: "openai", name: "OpenAI", description: "GPT-4o, o1, o3-mini" },
-    { id: "anthropic", name: "Anthropic", description: "Claude Sonnet 4, Opus 4.5, Haiku 4.5" },
-    { id: "deepseek", name: "DeepSeek", description: "DeepSeek V3 & R1 (Reasoning)" },
-    { id: "gemini", name: "Google Gemini", description: "Gemini 2.0 Flash, Gemini 2.5" },
-    { id: "openrouter", name: "OpenRouter", description: "Unified API (300+ models)" },
-    { id: "grok", name: "Grok (xAI)", description: "Grok 2, Grok 2 Vision" },
-    { id: "mistral", name: "Mistral AI", description: "Mistral Large 2, Pixtral" },
-    { id: "cohere", name: "Cohere", description: "Command R+ models" },
-    { id: "meta", name: "Meta AI", description: "Llama 3.3, Llama 3.2" },
-    { id: "together", name: "Together AI", description: "Fast inference (Llama, Qwen, DeepSeek)" },
-    { id: "other", name: "Other", description: "Custom provider" },
+    { id: "openai", name: "OpenAI" },
+    { id: "anthropic", name: "Anthropic" },
+    { id: "deepseek", name: "DeepSeek" },
+    { id: "gemini", name: "Google Gemini" },
+    { id: "openrouter", name: "OpenRouter" },
+    { id: "grok", name: "Grok (xAI)" },
+    { id: "mistral", name: "Mistral AI" },
+    { id: "cohere", name: "Cohere" },
+    { id: "meta", name: "Meta AI" },
+    { id: "together", name: "Together AI" },
+    { id: "other", name: "Other" },
 ] as const;
 
 export type ProviderId = (typeof LLM_PROVIDERS)[number]["id"];
@@ -18,7 +18,7 @@ export type ProviderId = (typeof LLM_PROVIDERS)[number]["id"];
 export const PROVIDER_IDS = LLM_PROVIDERS.map((p) => p.id);
 export const IS_OTHER = "other";
 
-/** Updated models for February 2025. */
+/** Quick-pick suggestions per provider. Dynamic list comes from OpenRouter API (useModelList). */
 export const MODELS_BY_PROVIDER: Record<string, { id: string; label: string }[]> = {
     openai: [
         { id: "gpt-4o", label: "GPT-4o (Latest)" },

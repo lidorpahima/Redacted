@@ -27,7 +27,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { LLM_PROVIDERS, IS_OTHER, MODELS_BY_PROVIDER, PROVIDER_IDS } from "@/utils/constants/providers";
+import { ModelCombobox } from "@/components/dashboard/model-combobox";
+import { LLM_PROVIDERS, IS_OTHER, PROVIDER_IDS } from "@/utils/constants/providers";
 import { CopyIcon, KeyRoundIcon, Loader2Icon, PencilIcon, Trash2Icon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -57,7 +58,6 @@ export default function ApiKeysPage() {
     const [provider, setProvider] = useState<string>("");
     const [providerCustomName, setProviderCustomName] = useState("");
     const [model, setModel] = useState("");
-    const [modelCustom, setModelCustom] = useState("");
     const [customerApiKey, setCustomerApiKey] = useState("");
     const [name, setName] = useState("");
 
@@ -66,7 +66,6 @@ export default function ApiKeysPage() {
     const [editProvider, setEditProvider] = useState("");
     const [editProviderCustomName, setEditProviderCustomName] = useState("");
     const [editModel, setEditModel] = useState("");
-    const [editModelCustom, setEditModelCustom] = useState("");
     const [editCustomerApiKey, setEditCustomerApiKey] = useState("");
     const [editName, setEditName] = useState("");
     const [editSubmitting, setEditSubmitting] = useState(false);
@@ -92,12 +91,7 @@ export default function ApiKeysPage() {
         fetchKeys();
     }, [fetchKeys]);
 
-    const suggestedModels = provider && provider !== IS_OTHER ? MODELS_BY_PROVIDER[provider] : null;
-    const CUSTOM_MODEL_VALUE = "__custom__";
-    const isCustomModel = suggestedModels && model === CUSTOM_MODEL_VALUE;
-    const modelToSend = suggestedModels
-        ? (isCustomModel ? modelCustom.trim() : model)
-        : (model.trim() || modelCustom.trim());
+    const modelToSend = model.trim();
 
     const handleConnect = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -138,7 +132,6 @@ export default function ApiKeysPage() {
             setCustomerApiKey("");
             setProviderCustomName("");
             setModel("");
-            setModelCustom("");
             setName("");
             await fetchKeys();
             toast.success("Connected. Copy your gateway key below — it won’t be shown again.");
@@ -164,10 +157,7 @@ export default function ApiKeysPage() {
             const isOther = !PROVIDER_IDS.includes(k.provider);
             setEditProvider(isOther ? IS_OTHER : k.provider);
             setEditProviderCustomName(isOther ? k.provider : "");
-            const suggested = !isOther && k.provider ? MODELS_BY_PROVIDER[k.provider] : null;
-            const modelInList = suggested?.some((m) => m.id === k.model);
-            setEditModel(modelInList ? k.model : (suggested ? CUSTOM_MODEL_VALUE : ""));
-            setEditModelCustom(modelInList ? "" : (k.model ?? ""));
+            setEditModel(k.model ?? "");
             setEditName(k.name ?? "");
         } catch {
             toast.error("Failed to load connection");
@@ -175,11 +165,7 @@ export default function ApiKeysPage() {
         }
     }, []);
 
-    const editSuggestedModels = editProvider && editProvider !== IS_OTHER ? MODELS_BY_PROVIDER[editProvider] : null;
-    const editIsCustomModel = editSuggestedModels && editModel === CUSTOM_MODEL_VALUE;
-    const editModelToSend = editSuggestedModels
-        ? (editIsCustomModel ? editModelCustom.trim() : editModel)
-        : (editModel.trim() || editModelCustom.trim());
+    const editModelToSend = editModel.trim();
 
     const handleEditSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -210,6 +196,9 @@ export default function ApiKeysPage() {
             await fetchKeys();
             setEditingId(null);
             toast.success("Connection updated");
+            if (data.backendUnreachable) {
+                toast.warning("Gateway backend was unavailable. The key will sync when the backend is running.");
+            }
         } catch (e) {
             toast.error(e instanceof Error ? e.message : "Failed to update");
         } finally {
@@ -271,14 +260,14 @@ export default function ApiKeysPage() {
                     <form onSubmit={handleConnect} className="space-y-4 max-w-lg">
                         <div className="space-y-2">
                             <Label htmlFor="provider">Provider</Label>
-                            <Select value={provider || undefined} onValueChange={(v) => { setProvider(v); setModel(""); setModelCustom(""); }}>
+                            <Select value={provider || undefined} onValueChange={(v) => { setProvider(v); setModel(""); }}>
                                 <SelectTrigger id="provider" className="w-full">
                                     <SelectValue placeholder="Select provider" />
                                 </SelectTrigger>
                                 <SelectContent className="z-[100]" position="popper">
                                     {LLM_PROVIDERS.map((p) => (
                                         <SelectItem key={p.id} value={p.id}>
-                                            {p.name} — {p.description}
+                                            {p.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -298,43 +287,30 @@ export default function ApiKeysPage() {
                         )}
                         <div className="space-y-2">
                             <Label htmlFor="model">Model (required)</Label>
-                            {suggestedModels ? (
-                                <>
-                                    <Select value={model || undefined} onValueChange={setModel}>
-                                        <SelectTrigger id="model" className="w-full">
-                                            <SelectValue placeholder="Choose model" />
-                                        </SelectTrigger>
-                                        <SelectContent className="z-[100]" position="popper">
-                                            {suggestedModels.map((m) => (
-                                                <SelectItem key={m.id} value={m.id}>
-                                                    {m.label}
-                                                </SelectItem>
-                                            ))}
-                                            <SelectItem value={CUSTOM_MODEL_VALUE}>Other (enter model ID)</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    {isCustomModel && (
-                                        <Input
-                                            placeholder="e.g. gpt-4o, claude-3-opus"
-                                            value={modelCustom}
-                                            onChange={(e) => setModelCustom(e.target.value)}
-                                            className="mt-2"
-                                        />
-                                    )}
-                                </>
-                            ) : (
-                                <Input
+                            {provider ? (
+                                <ModelCombobox
                                     id="model"
-                                    type="text"
-                                    placeholder="e.g. gpt-4o, claude-3-opus, gemini-pro"
-                                    value={model || modelCustom}
-                                    onChange={(e) => { setModel(e.target.value); setModelCustom(e.target.value); }}
-                                    required
+                                    provider={provider}
+                                    value={model}
+                                    onChange={setModel}
+                                    placeholder="Select or type model..."
+                                    customerApiKey={customerApiKey}
                                 />
+                            ) : (
+                                <>
+                                    <Input
+                                        id="model"
+                                        type="text"
+                                        placeholder="Select a provider first"
+                                        value={model}
+                                        onChange={(e) => setModel(e.target.value)}
+                                        disabled
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        We send requests to this model on your behalf and run security checks first.
+                                    </p>
+                                </>
                             )}
-                            <p className="text-xs text-muted-foreground">
-                                We send requests to this model on your behalf and run security checks first.
-                            </p>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="customerKey">Your API key (from the provider)</Label>
@@ -367,6 +343,116 @@ export default function ApiKeysPage() {
                     </form>
                 </CardContent>
             </Card>
+
+            {/* Edit connection dialog — opens when editingId is set */}
+            <Dialog open={!!editingId} onOpenChange={(open) => !open && setEditingId(null)}>
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Edit connection</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleEditSubmit} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Provider</Label>
+                            <Select
+                                value={editProvider || undefined}
+                                onValueChange={(v) => {
+                                    setEditProvider(v);
+                                    setEditModel("");
+                                }}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select provider" />
+                                </SelectTrigger>
+                                <SelectContent className="z-[100]" position="popper">
+                                    {LLM_PROVIDERS.map((p) => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                            {p.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {editProvider === IS_OTHER && (
+                            <div className="space-y-2">
+                                <Label>Provider name</Label>
+                                <Input
+                                    value={editProviderCustomName}
+                                    onChange={(e) => setEditProviderCustomName(e.target.value)}
+                                    placeholder="e.g. Replicate, Fireworks"
+                                />
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <Label>Model (required)</Label>
+                            {editProvider ? (
+                                <ModelCombobox
+                                    provider={editProvider}
+                                    value={editModel}
+                                    onChange={setEditModel}
+                                    placeholder="Select or type model..."
+                                    customerApiKey={editCustomerApiKey}
+                                />
+                            ) : (
+                                <Input
+                                    value={editModel}
+                                    onChange={(e) => setEditModel(e.target.value)}
+                                    placeholder="Model ID"
+                                />
+                            )}
+                        </div>
+                        <div className="space-y-2">
+                            <Label>New API key (optional — leave blank to keep current)</Label>
+                            <Input
+                                type="password"
+                                placeholder="sk-..."
+                                value={editCustomerApiKey}
+                                onChange={(e) => setEditCustomerApiKey(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Label (optional)</Label>
+                            <Input
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                placeholder="e.g. Production"
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2 pt-2">
+                            <Button type="button" variant="outline" onClick={() => setEditingId(null)}>
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={editSubmitting}>
+                                {editSubmitting ? <Loader2Icon className="h-4 w-4 animate-spin" /> : "Save"}
+                            </Button>
+                        </div>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete confirmation — opens when keyToDeleteId is set */}
+            <AlertDialog open={!!keyToDeleteId} onOpenChange={(open) => !open && setKeyToDeleteId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Remove connection?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will delete this gateway key. Any app using it will stop working. This cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setKeyToDeleteId(null)}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleDeleteConfirm();
+                            }}
+                            disabled={deleteSubmitting}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {deleteSubmitting ? <Loader2Icon className="h-4 w-4 animate-spin" /> : "Delete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* New key shown once */}
             {newKeyShown && (

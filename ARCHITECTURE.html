@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Security Gateway — Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --bg-card: #12121a;
+    --bg-card-hover: #1a1a28;
+    --border: #1e1e2e;
+    --border-glow: #6366f1;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --accent-blue: #60a5fa;
+    --accent-purple: #a78bfa;
+    --accent-green: #34d399;
+    --accent-orange: #fb923c;
+    --accent-red: #f87171;
+    --accent-cyan: #22d3ee;
+    --accent-pink: #f472b6;
+    --accent-yellow: #fbbf24;
+    --gradient-1: linear-gradient(135deg, #6366f1, #a78bfa);
+    --gradient-2: linear-gradient(135deg, #3b82f6, #22d3ee);
+    --gradient-3: linear-gradient(135deg, #f59e0b, #ef4444);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ============ HEADER ============ */
+  .hero {
+    padding: 60px 40px 30px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(99,102,241,0.08) 0%, transparent 50%);
+    animation: pulse-bg 8s ease-in-out infinite;
+  }
+  @keyframes pulse-bg {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #fff 0%, #a78bfa 50%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .hero .subtitle {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 700px;
+    margin: 0 auto 30px;
+    line-height: 1.6;
+    position: relative;
+  }
+  .badge-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+  }
+  .badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .badge .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  /* ============ TAB NAVIGATION ============ */
+  .tab-nav {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 40px;
+    margin-bottom: 30px;
+    position: relative;
+  }
+  .tab-btn {
+    padding: 10px 24px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: all 0.25s;
+  }
+  .tab-btn:hover {
+    background: var(--bg-card);
+    color: var(--text);
+  }
+  .tab-btn.active {
+    background: var(--bg-card);
+    border-color: var(--border-glow);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(99,102,241,0.15);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ============ CANVAS ============ */
+  .canvas-wrapper {
+    position: relative;
+    margin: 0 auto;
+    max-width: 1400px;
+    padding: 0 20px;
+  }
+  .canvas {
+    position: relative;
+    width: 100%;
+    min-height: 750px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(99,102,241,0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(59,130,246,0.04) 0%, transparent 40%),
+      var(--bg);
+    overflow: hidden;
+  }
+  .canvas-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+  }
+
+  /* ============ NODES ============ */
+  .node {
+    position: absolute;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    padding: 18px 22px;
+    cursor: grab;
+    transition: box-shadow 0.3s, border-color 0.3s;
+    user-select: none;
+    z-index: 2;
+    min-width: 180px;
+    max-width: 260px;
+    backdrop-filter: blur(10px);
+  }
+  .node:hover {
+    border-color: var(--border-glow);
+    box-shadow: 0 0 30px rgba(99,102,241,0.12);
+    z-index: 10;
+  }
+  .node.dragging {
+    cursor: grabbing;
+    z-index: 100;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(99,102,241,0.2);
+    border-color: var(--border-glow);
+  }
+  .node-icon {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+  }
+  .node-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: -0.02em;
+  }
+  .node-tech {
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .node-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+  .node-tag {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ============ SVG CONNECTIONS ============ */
+  svg.connections {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  svg.connections line, svg.connections path {
+    stroke-width: 1.5;
+    fill: none;
+  }
+
+  /* ============ FLOW SECTION ============ */
+  .flow-section {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+  }
+  .flow-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-align: center;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #fff, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+  .flow-steps::before {
+    content: '';
+    position: absolute;
+    left: 28px;
+    top: 24px;
+    bottom: 24px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--accent-purple), var(--accent-blue), var(--accent-green));
+    opacity: 0.3;
+  }
+  .flow-step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 16px 0;
+    position: relative;
+  }
+  .step-num {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    font-weight: 800;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    position: relative;
+    z-index: 2;
+  }
+  .step-body {
+    flex: 1;
+    padding-top: 4px;
+  }
+  .step-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .step-detail {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .step-code {
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(99,102,241,0.1);
+    color: var(--accent-purple);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+
+  /* ============ TECH STACK GRID ============ */
+  .stack-grid {
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    padding: 0 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .stack-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg-card);
+    padding: 22px;
+    transition: all 0.3s;
+  }
+  .stack-card:hover {
+    border-color: var(--border-glow);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .stack-card-icon {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  .stack-card-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .stack-card-tech {
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-purple);
+    margin-bottom: 8px;
+  }
+  .stack-card-desc {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+  }
+
+  /* ============ FOOTER ============ */
+  .footer {
+    text-align: center;
+    padding: 40px 20px 60px;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+  .footer a {
+    color: var(--accent-purple);
+    text-decoration: none;
+  }
+
+  /* ============ TOOLTIP ============ */
+  .canvas-hint {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    background: rgba(0,0,0,0.4);
+    padding: 5px 12px;
+    border-radius: 8px;
+    z-index: 20;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .canvas-hint svg { opacity: 0.5; }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 2rem; }
+    .hero { padding: 40px 20px 20px; }
+    .tab-btn { padding: 8px 14px; font-size: 0.8rem; }
+    .canvas { min-height: 600px; }
+    .node { padding: 14px 16px; min-width: 140px; max-width: 200px; }
+    .node-title { font-size: 0.82rem; }
+    .node-desc { font-size: 0.72rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<div class="hero">
+  <h1>LLM Security Gateway</h1>
+  <p class="subtitle">Enterprise AI Security Middleware — real-time threat detection, intelligent routing, and policy enforcement for LLM traffic.</p>
+  <div class="badge-row">
+    <span class="badge"><span class="dot" style="background:var(--accent-green)"></span> Production Ready</span>
+    <span class="badge"><span class="dot" style="background:var(--accent-blue)"></span> Next.js + FastAPI</span>
+    <span class="badge"><span class="dot" style="background:var(--accent-purple)"></span> LangChain + RAG</span>
+    <span class="badge"><span class="dot" style="background:var(--accent-orange)"></span> 100+ Models</span>
+  </div>
+</div>
+
+<!-- ==================== TABS ==================== -->
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('overview')">System Overview</button>
+  <button class="tab-btn" onclick="showTab('setup')">Setup Flow</button>
+  <button class="tab-btn" onclick="showTab('runtime')">Runtime Flow</button>
+  <button class="tab-btn" onclick="showTab('stack')">Tech Stack</button>
+</div>
+
+<!-- ==================== TAB 1: OVERVIEW ==================== -->
+<div class="tab-content active" id="tab-overview">
+  <div class="canvas-wrapper">
+    <div class="canvas" id="canvas-overview">
+      <div class="canvas-grid"></div>
+      <div class="canvas-hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5"/></svg>
+        Drag nodes to rearrange
+      </div>
+      <svg class="connections" id="svg-overview"></svg>
+
+      <!-- Client -->
+      <div class="node" id="ov-client" style="left:40px;top:300px" data-canvas="canvas-overview">
+        <div class="node-icon">👨‍💻</div>
+        <div class="node-title">Client Application</div>
+        <div class="node-tech">Any HTTP Client</div>
+        <div class="node-desc">Your app sends requests with the gateway key via X-API-Key header</div>
+        <span class="node-tag" style="background:rgba(96,165,250,0.15);color:var(--accent-blue)">INGRESS</span>
+      </div>
+
+      <!-- Gateway -->
+      <div class="node" id="ov-gateway" style="left:340px;top:80px" data-canvas="canvas-overview">
+        <div class="node-icon">🛡️</div>
+        <div class="node-title">Security Gateway</div>
+        <div class="node-tech">FastAPI · Python</div>
+        <div class="node-desc">Core engine — authenticates keys, runs guardrails, routes to providers</div>
+        <span class="node-tag" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)">DATA PLANE</span>
+      </div>
+
+      <!-- Guardrails -->
+      <div class="node" id="ov-guard" style="left:340px;top:340px" data-canvas="canvas-overview">
+        <div class="node-icon">🔒</div>
+        <div class="node-title">Guardrail Engine</div>
+        <div class="node-tech">LangChain · ChromaDB</div>
+        <div class="node-desc">Jailbreak detection, PII scanning, policy enforcement via RAG</div>
+        <span class="node-tag" style="background:rgba(248,113,113,0.15);color:var(--accent-red)">SECURITY</span>
+      </div>
+
+      <!-- Dashboard -->
+      <div class="node" id="ov-dashboard" style="left:340px;top:570px" data-canvas="canvas-overview">
+        <div class="node-icon">📊</div>
+        <div class="node-title">Dashboard</div>
+        <div class="node-tech">Next.js · Tailwind · Clerk</div>
+        <div class="node-desc">Key management, provider config, logs, analytics, and settings</div>
+        <span class="node-tag" style="background:rgba(52,211,153,0.15);color:var(--accent-green)">CONTROL PLANE</span>
+      </div>
+
+      <!-- Database -->
+      <div class="node" id="ov-db" style="left:680px;top:500px" data-canvas="canvas-overview">
+        <div class="node-icon">🗄️</div>
+        <div class="node-title">Database</div>
+        <div class="node-tech">MongoDB · Prisma</div>
+        <div class="node-desc">Users, API keys, gateway mappings, audit logs</div>
+        <span class="node-tag" style="background:rgba(251,191,36,0.15);color:var(--accent-yellow)">STORAGE</span>
+      </div>
+
+      <!-- Cache -->
+      <div class="node" id="ov-cache" style="left:680px;top:300px" data-canvas="canvas-overview">
+        <div class="node-icon">⚡</div>
+        <div class="node-title">Cache Layer</div>
+        <div class="node-tech">In-Memory → Redis</div>
+        <div class="node-desc">Fast key resolution and response caching for performance</div>
+        <span class="node-tag" style="background:rgba(251,146,60,0.15);color:var(--accent-orange)">SPEED</span>
+      </div>
+
+      <!-- LiteLLM Router -->
+      <div class="node" id="ov-router" style="left:680px;top:80px" data-canvas="canvas-overview">
+        <div class="node-icon">🔌</div>
+        <div class="node-title">LiteLLM Router</div>
+        <div class="node-tech">LiteLLM</div>
+        <div class="node-desc">Universal adapter — translates requests for any LLM provider</div>
+        <span class="node-tag" style="background:rgba(34,211,238,0.15);color:var(--accent-cyan)">ROUTING</span>
+      </div>
+
+      <!-- Providers -->
+      <div class="node" id="ov-providers" style="left:1010px;top:180px" data-canvas="canvas-overview">
+        <div class="node-icon">☁️</div>
+        <div class="node-title">LLM Providers</div>
+        <div class="node-tech">OpenAI · Gemini · Claude · Grok</div>
+        <div class="node-desc">100+ models across all major providers</div>
+        <span class="node-tag" style="background:rgba(244,114,182,0.15);color:var(--accent-pink)">UPSTREAM</span>
+      </div>
+
+      <!-- MCP -->
+      <div class="node" id="ov-mcp" style="left:1010px;top:430px" data-canvas="canvas-overview">
+        <div class="node-icon">🤖</div>
+        <div class="node-title">MCP Integration</div>
+        <div class="node-tech">Model Context Protocol</div>
+        <div class="node-desc">Claude Desktop can use the gateway as a security scanning tool</div>
+        <span class="node-tag" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)">EXTENSION</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overview connections definition -->
+  <script>
+    const overviewConnections = [
+      { from: 'ov-client', to: 'ov-gateway', color: '#60a5fa', label: 'X-API-Key' },
+      { from: 'ov-gateway', to: 'ov-guard', color: '#f87171', label: 'analyze' },
+      { from: 'ov-gateway', to: 'ov-router', color: '#22d3ee', label: 'proxy' },
+      { from: 'ov-gateway', to: 'ov-cache', color: '#fb923c', label: 'resolve' },
+      { from: 'ov-router', to: 'ov-providers', color: '#f472b6', label: 'completion' },
+      { from: 'ov-dashboard', to: 'ov-db', color: '#fbbf24', label: 'CRUD' },
+      { from: 'ov-dashboard', to: 'ov-gateway', color: '#34d399', label: 'register-key' },
+      { from: 'ov-cache', to: 'ov-db', color: '#fbbf24', label: 'fallback' },
+      { from: 'ov-mcp', to: 'ov-gateway', color: '#a78bfa', label: '/scan' },
+    ];
+  </script>
+</div>
+
+<!-- ==================== TAB 2: SETUP FLOW ==================== -->
+<div class="tab-content" id="tab-setup">
+  <div class="flow-section">
+    <div class="flow-title">⚙️ The Setup Flow — Key Registration</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num" style="border-color:rgba(96,165,250,0.3);color:var(--accent-blue)">1</div>
+        <div class="step-body">
+          <div class="step-label">User Connects Provider</div>
+          <div class="step-detail">
+            User logs into the Dashboard, selects a provider (e.g. Google Gemini),
+            enters their real API key, and chooses a model. Clicks <span class="step-code">Connect</span>.
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num" style="border-color:rgba(167,139,250,0.3);color:var(--accent-purple)">2</div>
+        <div class="step-body">
+          <div class="step-label">Gateway Key Generation</div>
+          <div class="step-detail">
+            Next.js Server Action generates a virtual gateway key: <span class="step-code">sk-redacted-xyz...</span>
+            and stores the mapping in MongoDB via Prisma: <span class="step-code">gateway_key ↔ provider + model + real_api_key</span>
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num" style="border-color:rgba(52,211,153,0.3);color:var(--accent-green)">3</div>
+        <div class="step-body">
+          <div class="step-label">Backend Sync</div>
+          <div class="step-detail">
+            Next.js sends <span class="step-code">POST /register-key</span> to the FastAPI backend.
+            The Python server caches the mapping in RAM for instant access during runtime.
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num" style="border-color:rgba(251,146,60,0.3);color:var(--accent-orange)">4</div>
+        <div class="step-body">
+          <div class="step-label">Ready to Use</div>
+          <div class="step-detail">
+            The gateway key is shown once. User copies it and uses it in their app as
+            <span class="step-code">X-API-Key</span> header. The real key is never exposed.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup interactive diagram -->
+  <div class="canvas-wrapper">
+    <div class="canvas" id="canvas-setup" style="min-height:500px">
+      <div class="canvas-grid"></div>
+      <div class="canvas-hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5"/></svg>
+        Drag nodes to rearrange
+      </div>
+      <svg class="connections" id="svg-setup"></svg>
+
+      <div class="node" id="su-user" style="left:40px;top:180px" data-canvas="canvas-setup">
+        <div class="node-icon">👤</div>
+        <div class="node-title">User</div>
+        <div class="node-tech">Browser</div>
+        <div class="node-desc">Selects provider, model, enters API key</div>
+      </div>
+
+      <div class="node" id="su-next" style="left:340px;top:80px" data-canvas="canvas-setup">
+        <div class="node-icon">▲</div>
+        <div class="node-title">Next.js</div>
+        <div class="node-tech">Server Action</div>
+        <div class="node-desc">Generates sk-redacted-xxx, stores mapping</div>
+        <span class="node-tag" style="background:rgba(52,211,153,0.15);color:var(--accent-green)">CONTROL PLANE</span>
+      </div>
+
+      <div class="node" id="su-mongo" style="left:340px;top:310px" data-canvas="canvas-setup">
+        <div class="node-icon">🗄️</div>
+        <div class="node-title">MongoDB</div>
+        <div class="node-tech">Prisma ORM</div>
+        <div class="node-desc">Persistent storage: gateway_key ↔ provider + real_key</div>
+      </div>
+
+      <div class="node" id="su-fast" style="left:680px;top:80px" data-canvas="canvas-setup">
+        <div class="node-icon">⚡</div>
+        <div class="node-title">FastAPI Backend</div>
+        <div class="node-tech">POST /register-key</div>
+        <div class="node-desc">Caches key mapping in RAM for instant resolution</div>
+        <span class="node-tag" style="background:rgba(167,139,250,0.15);color:var(--accent-purple)">DATA PLANE</span>
+      </div>
+
+      <div class="node" id="su-mem" style="left:680px;top:310px" data-canvas="canvas-setup">
+        <div class="node-icon">🧠</div>
+        <div class="node-title">In-Memory Cache</div>
+        <div class="node-tech">Python Dict → Redis</div>
+        <div class="node-desc">API_KEY_MAPPING for sub-ms key lookups</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const setupConnections = [
+      { from: 'su-user', to: 'su-next', color: '#60a5fa', label: 'connect' },
+      { from: 'su-next', to: 'su-mongo', color: '#fbbf24', label: 'save' },
+      { from: 'su-next', to: 'su-fast', color: '#34d399', label: 'POST /register-key' },
+      { from: 'su-fast', to: 'su-mem', color: '#fb923c', label: 'cache' },
+    ];
+  </script>
+</div>
+
+<!-- ==================== TAB 3: RUNTIME FLOW ==================== -->
+<div class="tab-content" id="tab-runtime">
+  <div class="flow-section">
+    <div class="flow-title">⚡ The Runtime Flow — Request Processing</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num" style="border-color:rgba(96,165,250,0.3);color:var(--accent-blue)">1</div>
+        <div class="step-body">
+          <div class="step-label">Ingress</div>
+          <div class="step-detail">
+            Client sends request to <span class="step-code">POST /v1/chat/completions</span>
+            with <span class="step-code">X-API-Key: sk-redacted-xyz</span> and the message body.
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num" style="border-color:rgba(167,139,250,0.3);color:var(--accent-purple)">2</div>
+        <div class="step-body">
+          <div class="step-label">Authentication & Resolution</div>
+          <div class="step-detail">
+            FastAPI checks the in-memory cache: <span class="step-code">API_KEY_MAPPING["sk-redacted-xyz"]</span>
+            → resolves to provider, model, and the customer's real API key.
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num" style="border-color:rgba(248,113,113,0.3);color:var(--accent-red)">3</div>
+        <div class="step-body">
+          <div class="step-label">Guardrail Layer 🛡️</div>
+          <div class="step-detail">
+            LangChain analyzes the message: prompt injection check, PII detection, policy enforcement via RAG (ChromaDB).
+            <br><span style="color:var(--accent-red)">🔴 Unsafe</span> → returns 400 immediately (saves cost).
+            <span style="color:var(--accent-green)">🟢 Safe</span> → proceeds.
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num" style="border-color:rgba(34,211,238,0.3);color:var(--accent-cyan)">4</div>
+        <div class="step-body">
+          <div class="step-label">Adapter & Router</div>
+          <div class="step-detail">
+            Translates model name for LiteLLM (e.g. <span class="step-code">google/gemini-2.5-pro</span>
+            → <span class="step-code">gemini/gemini-2.5-pro</span>). Maps to the correct provider format.
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num" style="border-color:rgba(244,114,182,0.3);color:var(--accent-pink)">5</div>
+        <div class="step-body">
+          <div class="step-label">Upstream Call</div>
+          <div class="step-detail">
+            LiteLLM sends the request to the actual LLM provider (Google, OpenAI, Anthropic, etc.)
+            using the customer's real API key.
+          </div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num" style="border-color:rgba(52,211,153,0.3);color:var(--accent-green)">6</div>
+        <div class="step-body">
+          <div class="step-label">Response</div>
+          <div class="step-detail">
+            Provider returns response → Gateway adds security stamp
+            <span class="step-code">"Security Check: Passed"</span> → forwards to client.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Runtime interactive diagram -->
+  <div class="canvas-wrapper">
+    <div class="canvas" id="canvas-runtime" style="min-height:550px">
+      <div class="canvas-grid"></div>
+      <div class="canvas-hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5"/></svg>
+        Drag nodes to rearrange
+      </div>
+      <svg class="connections" id="svg-runtime"></svg>
+
+      <div class="node" id="rt-client" style="left:30px;top:180px" data-canvas="canvas-runtime">
+        <div class="node-icon">📱</div>
+        <div class="node-title">Client</div>
+        <div class="node-tech">HTTP POST</div>
+        <div class="node-desc">Sends chat request with gateway key</div>
+      </div>
+
+      <div class="node" id="rt-auth" style="left:280px;top:40px" data-canvas="canvas-runtime">
+        <div class="node-icon">🔑</div>
+        <div class="node-title">Auth & Resolve</div>
+        <div class="node-tech">FastAPI Middleware</div>
+        <div class="node-desc">Validates gateway key, resolves to provider + real key</div>
+      </div>
+
+      <div class="node" id="rt-guard" style="left:280px;top:280px" data-canvas="canvas-runtime">
+        <div class="node-icon">🛡️</div>
+        <div class="node-title">Guardrail</div>
+        <div class="node-tech">LangChain · RAG</div>
+        <div class="node-desc">Jailbreak, PII, policy check. Block or pass.</div>
+        <span class="node-tag" style="background:rgba(248,113,113,0.15);color:var(--accent-red)">FIREWALL</span>
+      </div>
+
+      <div class="node" id="rt-adapter" style="left:570px;top:40px" data-canvas="canvas-runtime">
+        <div class="node-icon">🔌</div>
+        <div class="node-title">LiteLLM Adapter</div>
+        <div class="node-tech">Model Translation</div>
+        <div class="node-desc">Translates model names and formats for each provider</div>
+      </div>
+
+      <div class="node" id="rt-chroma" style="left:570px;top:280px" data-canvas="canvas-runtime">
+        <div class="node-icon">📚</div>
+        <div class="node-title">Policy Store</div>
+        <div class="node-tech">ChromaDB</div>
+        <div class="node-desc">Vector DB with company policies for RAG retrieval</div>
+      </div>
+
+      <div class="node" id="rt-llm" style="left:860px;top:160px" data-canvas="canvas-runtime">
+        <div class="node-icon">🧠</div>
+        <div class="node-title">LLM Provider</div>
+        <div class="node-tech">OpenAI · Gemini · Claude</div>
+        <div class="node-desc">Actual model inference with customer's real API key</div>
+        <span class="node-tag" style="background:rgba(244,114,182,0.15);color:var(--accent-pink)">UPSTREAM</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    const runtimeConnections = [
+      { from: 'rt-client', to: 'rt-auth', color: '#60a5fa', label: 'X-API-Key' },
+      { from: 'rt-auth', to: 'rt-guard', color: '#f87171', label: 'analyze' },
+      { from: 'rt-guard', to: 'rt-chroma', color: '#fbbf24', label: 'RAG query' },
+      { from: 'rt-auth', to: 'rt-adapter', color: '#22d3ee', label: 'if safe' },
+      { from: 'rt-adapter', to: 'rt-llm', color: '#f472b6', label: 'completion()' },
+      { from: 'rt-llm', to: 'rt-client', color: '#34d399', label: 'response' },
+    ];
+  </script>
+</div>
+
+<!-- ==================== TAB 4: TECH STACK ==================== -->
+<div class="tab-content" id="tab-stack">
+  <div class="flow-section">
+    <div class="flow-title">🔧 Technology Stack</div>
+  </div>
+  <div class="stack-grid">
+    <div class="stack-card">
+      <div class="stack-card-icon">▲</div>
+      <div class="stack-card-title">Frontend</div>
+      <div class="stack-card-tech">Next.js 14 · React 18 · TypeScript</div>
+      <div class="stack-card-desc">App Router, Server Actions, Tailwind CSS, Radix UI components, Framer Motion animations.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">🔐</div>
+      <div class="stack-card-title">Authentication</div>
+      <div class="stack-card-tech">Clerk</div>
+      <div class="stack-card-desc">OAuth & passwordless auth, user management, protected routes via middleware.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">⚡</div>
+      <div class="stack-card-title">Backend</div>
+      <div class="stack-card-tech">Python · FastAPI · Uvicorn</div>
+      <div class="stack-card-desc">Async REST API, real-time request processing, CORS middleware, health checks.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">🛡️</div>
+      <div class="stack-card-title">Security Engine</div>
+      <div class="stack-card-tech">LangChain · LangChain-OpenAI</div>
+      <div class="stack-card-desc">Prompt injection detection, PII scanning, policy enforcement with structured output.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">📚</div>
+      <div class="stack-card-title">Vector Database</div>
+      <div class="stack-card-tech">ChromaDB · Pinecone</div>
+      <div class="stack-card-desc">RAG retrieval for company policies. ChromaDB local dev, Pinecone for production.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">🔌</div>
+      <div class="stack-card-title">LLM Router</div>
+      <div class="stack-card-tech">LiteLLM</div>
+      <div class="stack-card-desc">Universal adapter for 100+ models. Translates between OpenAI, Gemini, Claude, Grok, etc.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">🗄️</div>
+      <div class="stack-card-title">Database</div>
+      <div class="stack-card-tech">MongoDB · Prisma ORM</div>
+      <div class="stack-card-desc">Users, API keys, gateway mappings, audit logs. Schema-first with type safety.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">🚀</div>
+      <div class="stack-card-title">Caching</div>
+      <div class="stack-card-tech">In-Memory → Redis</div>
+      <div class="stack-card-desc">Sub-millisecond key lookups. In-memory dict for dev, Redis for production.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">🤖</div>
+      <div class="stack-card-title">MCP Integration</div>
+      <div class="stack-card-tech">Model Context Protocol</div>
+      <div class="stack-card-desc">Claude Desktop tool integration for real-time security scanning via /scan endpoint.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">🐳</div>
+      <div class="stack-card-title">Infrastructure</div>
+      <div class="stack-card-tech">Docker Compose</div>
+      <div class="stack-card-desc">4 services: backend, frontend, mongodb, redis. One command to run everything.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">📊</div>
+      <div class="stack-card-title">Embeddings</div>
+      <div class="stack-card-tech">OpenAI text-embedding-3-small</div>
+      <div class="stack-card-desc">Policy document embeddings for semantic similarity search in the guardrail layer.</div>
+    </div>
+    <div class="stack-card">
+      <div class="stack-card-icon">🎨</div>
+      <div class="stack-card-title">UI Components</div>
+      <div class="stack-card-tech">Radix UI · shadcn/ui</div>
+      <div class="stack-card-desc">60+ accessible components. AnimatedBeam, MagicCard, BorderBeam, RetroGrid effects.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<div class="footer">
+  <p><strong>LLM Security Gateway</strong> — Built by <a href="https://linkedin.com/in/lidor-pahima" target="_blank">Lidor Pahima</a></p>
+  <p style="margin-top:6px">Enterprise AI Security Middleware · MIT License</p>
+</div>
+
+<!-- ==================== MAIN SCRIPT ==================== -->
+<script>
+(function() {
+  // ============ TAB SWITCHING ============
+  window.showTab = function(name) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    event.target.classList.add('active');
+    // Redraw connections for the active canvas
+    setTimeout(() => drawAllConnections(), 50);
+  };
+
+  // ============ DRAG & DROP ============
+  let dragState = null;
+
+  document.querySelectorAll('.node').forEach(node => {
+    node.addEventListener('mousedown', startDrag);
+    node.addEventListener('touchstart', startDrag, { passive: false });
+  });
+
+  function startDrag(e) {
+    e.preventDefault();
+    const node = e.currentTarget;
+    const rect = node.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    dragState = {
+      node,
+      offsetX: clientX - rect.left,
+      offsetY: clientY - rect.top,
+      canvasId: node.dataset.canvas
+    };
+    node.classList.add('dragging');
+
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchmove', onDrag, { passive: false });
+    document.addEventListener('touchend', endDrag);
+  }
+
+  function onDrag(e) {
+    if (!dragState) return;
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    const canvas = document.getElementById(dragState.canvasId);
+    const canvasRect = canvas.getBoundingClientRect();
+
+    let x = clientX - canvasRect.left - dragState.offsetX;
+    let y = clientY - canvasRect.top - dragState.offsetY;
+
+    // Clamp to canvas bounds
+    x = Math.max(0, Math.min(x, canvasRect.width - dragState.node.offsetWidth));
+    y = Math.max(0, Math.min(y, canvasRect.height - dragState.node.offsetHeight));
+
+    dragState.node.style.left = x + 'px';
+    dragState.node.style.top = y + 'px';
+
+    drawAllConnections();
+  }
+
+  function endDrag() {
+    if (dragState) {
+      dragState.node.classList.remove('dragging');
+      dragState = null;
+    }
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('mouseup', endDrag);
+    document.removeEventListener('touchmove', onDrag);
+    document.removeEventListener('touchend', endDrag);
+  }
+
+  // ============ CONNECTION DRAWING ============
+  function getNodeCenter(nodeId) {
+    const node = document.getElementById(nodeId);
+    if (!node) return null;
+    const canvas = document.getElementById(node.dataset.canvas);
+    if (!canvas) return null;
+    const canvasRect = canvas.getBoundingClientRect();
+    const nodeRect = node.getBoundingClientRect();
+    return {
+      x: nodeRect.left - canvasRect.left + nodeRect.width / 2,
+      y: nodeRect.top - canvasRect.top + nodeRect.height / 2
+    };
+  }
+
+  function getConnectionPoint(fromId, toId) {
+    const fromNode = document.getElementById(fromId);
+    const toNode = document.getElementById(toId);
+    if (!fromNode || !toNode) return null;
+
+    const canvas = document.getElementById(fromNode.dataset.canvas);
+    const canvasRect = canvas.getBoundingClientRect();
+
+    const fromRect = fromNode.getBoundingClientRect();
+    const toRect = toNode.getBoundingClientRect();
+
+    const fromCx = fromRect.left - canvasRect.left + fromRect.width / 2;
+    const fromCy = fromRect.top - canvasRect.top + fromRect.height / 2;
+    const toCx = toRect.left - canvasRect.left + toRect.width / 2;
+    const toCy = toRect.top - canvasRect.top + toRect.height / 2;
+
+    // Find edge intersection for "from"
+    const fromPt = edgeIntersection(fromCx, fromCy, fromRect.width, fromRect.height, toCx, toCy);
+    const toPt = edgeIntersection(toCx, toCy, toRect.width, toRect.height, fromCx, fromCy);
+
+    return { from: fromPt, to: toPt };
+  }
+
+  function edgeIntersection(cx, cy, w, h, targetX, targetY) {
+    const dx = targetX - cx;
+    const dy = targetY - cy;
+    const halfW = w / 2 + 6;
+    const halfH = h / 2 + 6;
+
+    if (dx === 0 && dy === 0) return { x: cx, y: cy };
+
+    const scaleX = halfW / Math.abs(dx || 0.001);
+    const scaleY = halfH / Math.abs(dy || 0.001);
+    const scale = Math.min(scaleX, scaleY);
+
+    return {
+      x: cx + dx * scale,
+      y: cy + dy * scale
+    };
+  }
+
+  function drawConnections(svgId, connections) {
+    const svg = document.getElementById(svgId);
+    if (!svg) return;
+    svg.innerHTML = '';
+
+    // Add defs for arrow markers
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    connections.forEach((conn, i) => {
+      const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+      marker.setAttribute('id', `arrow-${svgId}-${i}`);
+      marker.setAttribute('markerWidth', '8');
+      marker.setAttribute('markerHeight', '8');
+      marker.setAttribute('refX', '7');
+      marker.setAttribute('refY', '4');
+      marker.setAttribute('orient', 'auto');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', 'M0,1 L7,4 L0,7 Z');
+      path.setAttribute('fill', conn.color);
+      path.setAttribute('opacity', '0.6');
+      marker.appendChild(path);
+      defs.appendChild(marker);
+    });
+    svg.appendChild(defs);
+
+    connections.forEach((conn, i) => {
+      const pts = getConnectionPoint(conn.from, conn.to);
+      if (!pts) return;
+
+      // Curved path
+      const midX = (pts.from.x + pts.to.x) / 2;
+      const midY = (pts.from.y + pts.to.y) / 2;
+      const dx = pts.to.x - pts.from.x;
+      const dy = pts.to.y - pts.from.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const curvature = Math.min(dist * 0.15, 40);
+
+      // Perpendicular offset for curve
+      const nx = -dy / (dist || 1) * curvature;
+      const ny = dx / (dist || 1) * curvature;
+
+      const ctrlX = midX + nx;
+      const ctrlY = midY + ny;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', `M${pts.from.x},${pts.from.y} Q${ctrlX},${ctrlY} ${pts.to.x},${pts.to.y}`);
+      path.setAttribute('stroke', conn.color);
+      path.setAttribute('opacity', '0.35');
+      path.setAttribute('marker-end', `url(#arrow-${svgId}-${i})`);
+      svg.appendChild(path);
+
+      // Label
+      if (conn.label) {
+        const labelX = (pts.from.x + 2 * ctrlX + pts.to.x) / 4;
+        const labelY = (pts.from.y + 2 * ctrlY + pts.to.y) / 4;
+
+        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        const textWidth = conn.label.length * 6.5 + 12;
+        bg.setAttribute('x', labelX - textWidth / 2);
+        bg.setAttribute('y', labelY - 10);
+        bg.setAttribute('width', textWidth);
+        bg.setAttribute('height', 18);
+        bg.setAttribute('rx', '6');
+        bg.setAttribute('fill', 'rgba(10,10,15,0.85)');
+        bg.setAttribute('stroke', conn.color);
+        bg.setAttribute('stroke-opacity', '0.2');
+        bg.setAttribute('stroke-width', '1');
+        svg.appendChild(bg);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', labelX);
+        text.setAttribute('y', labelY + 3);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', conn.color);
+        text.setAttribute('font-size', '10');
+        text.setAttribute('font-family', "'JetBrains Mono', monospace");
+        text.setAttribute('font-weight', '500');
+        text.setAttribute('opacity', '0.8');
+        text.textContent = conn.label;
+        svg.appendChild(text);
+      }
+    });
+  }
+
+  function drawAllConnections() {
+    if (typeof overviewConnections !== 'undefined') drawConnections('svg-overview', overviewConnections);
+    if (typeof setupConnections !== 'undefined') drawConnections('svg-setup', setupConnections);
+    if (typeof runtimeConnections !== 'undefined') drawConnections('svg-runtime', runtimeConnections);
+  }
+
+  // Initial draw
+  drawAllConnections();
+
+  // Redraw on resize
+  window.addEventListener('resize', drawAllConnections);
+
+  // Animated entrance
+  document.querySelectorAll('.node').forEach((node, i) => {
+    node.style.opacity = '0';
+    node.style.transform = 'translateY(20px)';
+    node.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    setTimeout(() => {
+      node.style.opacity = '1';
+      node.style.transform = 'translateY(0)';
+    }, 100 + i * 80);
+  });
+})();
+</script>
+</body>
+</html>

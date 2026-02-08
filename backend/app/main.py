@@ -1,12 +1,25 @@
-import secrets
 import os
 from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
+import httpx
 from app.chains.guardrail import analyze_security
+from litellm import completion
 
-# LiteLLM: unified interface to call any LLM provider
-from litellm import completion 
+# Map our provider ids to LiteLLM model prefix (so api_key is used, not Vertex/Cloud defaults)
+LITELLM_PROVIDER_PREFIX = {
+    "google": "gemini",  
+    "gemini": "gemini",  
+    "grok": "xai",        
+    "meta": "meta-llama", 
+    "together": "together_ai",
+    "openai": "openai",   
+    "anthropic": "anthropic",
+    "mistral": "mistral",
+    "cohere": "cohere",
+    "other": None,
+}
+# All other providers (openai, anthropic, deepseek, gemini, openrouter, mistral, cohere) use same id
 
 app = FastAPI()
 
@@ -20,9 +33,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory key mapping (use Redis/DB in production)
-# Shape: { "sk-redacted-XYZ": { "provider": "openai", "model": "gpt-4o", "api_key": "sk-..." } }
-API_KEY_MAPPING = {}
+# In-memory cache; if key missing (e.g. after restart), we resolve from Next.js DB via resolve-key
+API_KEY_MAPPING: dict[str, dict] = {}
+FRONTEND_URL = (os.getenv("FRONTEND_URL") or "http://localhost:3000").rstrip("/")
+INTERNAL_API_SECRET = os.getenv("INTERNAL_API_SECRET", "")
 
 class ScanRequest(BaseModel):
     text: str
@@ -44,9 +58,113 @@ class RegisterKeyRequest(BaseModel):
 class UnregisterKeyRequest(BaseModel):
     gateway_key: str
 
+
+class ListModelsRequest(BaseModel):
+    """Body for /list-models: list models from provider using user's API key."""
+    provider: str
+    api_key: str
+
+
+async def get_user_config(x_api_key: str = Header(None)):
+    """Resolve gateway key: in-memory cache first, then Next.js resolve-key (DB)."""
+    if x_api_key is None:
+        raise HTTPException(status_code=401, detail="Missing X-API-Key header")
+    user_config = API_KEY_MAPPING.get(x_api_key)
+    if user_config:
+        return user_config
+    # Fallback: resolve from frontend DB (set INTERNAL_API_SECRET + FRONTEND_URL for this)
+    if not INTERNAL_API_SECRET:
+        raise HTTPException(status_code=403, detail="Invalid API Key")
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.get(
+                f"{FRONTEND_URL}/api/internal/resolve-key",
+                params={"key": x_api_key},
+                headers={"Internal-Secret": INTERNAL_API_SECRET},
+            )
+        if r.status_code != 200:
+            raise HTTPException(status_code=403, detail="Invalid API Key")
+        data = r.json()
+        user_config = {
+            "provider": data.get("provider", ""),
+            "model": data.get("model") or "",
+            "api_key": data.get("customerApiKey", ""),
+        }
+        if not user_config["api_key"]:
+            raise HTTPException(status_code=403, detail="Invalid API Key")
+        API_KEY_MAPPING[x_api_key] = user_config  # cache for next time
+        return user_config
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=403, detail="Invalid API Key")
+
+
 @app.get("/health")
 def health_check():
     return {"status": "ok", "message": "Server is running 🚀"}
+
+
+def _list_models_gemini(api_key: str) -> list[dict]:
+    """GET Google Gemini v1beta models; returns [{ id, label }]."""
+    r = httpx.get(
+        "https://generativelanguage.googleapis.com/v1beta/models",
+        params={"key": api_key},
+        timeout=15.0,
+    )
+    r.raise_for_status()
+    data = r.json()
+    out = []
+    for m in data.get("models") or []:
+        name = m.get("name", "")
+        if name.startswith("models/"):
+            name = name[7:]
+        if not name or "embedding" in name.lower():
+            continue
+        methods = m.get("supportedGenerationMethods") or []
+        if methods and "generateContent" not in methods:
+            continue
+        out.append({"id": name, "label": m.get("displayName") or name})
+    return out
+
+
+def _list_models_openai(api_key: str) -> list[dict]:
+    """GET OpenAI /v1/models; returns [{ id, label }]."""
+    r = httpx.get(
+        "https://api.openai.com/v1/models",
+        headers={"Authorization": f"Bearer {api_key}"},
+        timeout=15.0,
+    )
+    r.raise_for_status()
+    data = r.json()
+    out = []
+    for m in data.get("data") or []:
+        mid = m.get("id", "")
+        if not mid:
+            continue
+        out.append({"id": mid, "label": mid})
+    return out
+
+
+@app.post("/list-models")
+def list_models(req: ListModelsRequest):
+    """Return models for the given provider using the user's API key (for dashboard dropdown)."""
+    if not req.api_key or not req.provider:
+        return {"models": []}
+    provider = req.provider.lower()
+    try:
+        if provider == "gemini":
+            models = _list_models_gemini(req.api_key.strip())
+        elif provider == "openai":
+            models = _list_models_openai(req.api_key.strip())
+        else:
+            # Anthropic etc. don't have a simple list endpoint; frontend will use OpenRouter + custom
+            return {"models": []}
+        return {"models": models}
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status_code=502, detail=f"Provider returned {e.response.status_code}")
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 # Register key endpoint (called by Next.js when user connects a provider)
 @app.post("/register-key")
@@ -84,26 +202,14 @@ def unregister_key(req: UnregisterKeyRequest):
         del API_KEY_MAPPING[req.gateway_key]
     return {"status": "unregistered"}
 
-# Validate API key and load user config
-async def get_user_config(x_api_key: str = Header(None)):
-    if x_api_key is None:
-        raise HTTPException(status_code=401, detail="Missing X-API-Key header")
-    
-    user_config = API_KEY_MAPPING.get(x_api_key)
-    if not user_config:
-        raise HTTPException(status_code=403, detail="Invalid API Key")
-    
-    return user_config
-
 # Main proxy: runs security check then forwards to LLM
-@app.post("/v1/chat/completions")  # OpenAI-compatible path
+@app.post("/v1/chat/completions")
 def chat_proxy(request: ScanRequest, user_config: dict = Depends(get_user_config)):
     user_input = request.text
 
-    # 1. Security check (guardrail)
+    # 1. Security check
     security_result = analyze_security(user_input)
 
-    # Block request if unsafe; do not call LLM
     if not security_result["is_safe"]:
         return {
             "error": {
@@ -113,25 +219,49 @@ def chat_proxy(request: ScanRequest, user_config: dict = Depends(get_user_config
             }
         }
 
-    # 2. If safe, forward to upstream LLM
+    print("  → Guardrail passed, calling LLM...")
+    
+    # 2. בניית שם המודל בצורה בטוחה 🛠️
     try:
-        # LiteLLM supports OpenAI, Claude, Gemini, etc.
-        response = completion(
-            model=user_config["model"],   # Model chosen by user
-            api_key=user_config["api_key"],  # User's API key
-            messages=[{"role": "user", "content": user_input}]
-        )
+        provider = user_config.get("provider", "").lower()
+        raw_model = user_config["model"]
+        
+        # מציאת הקידומת הנכונה ל-LiteLLM (למשל: gemini, openai, xai)
+        target_prefix = LITELLM_PROVIDER_PREFIX.get(provider) or provider
+        
+        # לוגיקה לתיקון המודל:
+        # אם אנחנו יודעים מה הקידומת הנכונה, אנחנו נכפה אותה.
+        if target_prefix and target_prefix != "other":
+            
+            # אם המודל מגיע עם לוכסן (למשל google/gemini-pro), ננקה את הקידומת הישנה
+            if "/" in raw_model:
+                _, model_suffix = raw_model.split("/", 1)
+            else:
+                model_suffix = raw_model
+                
+            # הרכבה מחדש: gemini/gemini-2.5-pro
+            final_model = f"{target_prefix}/{model_suffix}"
+        else:
+            # במקרה של 'other' או openrouter, משאירים כמו שזה
+            final_model = raw_model
 
-        # Return model response plus security-passed stamp
+        print(f"  → Calling LLM: {final_model} (timeout 90s)")
+        
+        response = completion(
+            model=final_model,
+            api_key=user_config["api_key"],
+            messages=[{"role": "user", "content": user_input}],
+            timeout=90,
+        )
+        print("  → LLM response received")
         return {
             "security_check": "passed",
             "risk_score": security_result["risk_score"],
-            "data": response  # Raw response from upstream LLM
+            "data": response
         }
-        
     except Exception as e:
+        print(f"  → LLM error: {e}")
         raise HTTPException(status_code=500, detail=f"Upstream LLM Error: {str(e)}")
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
