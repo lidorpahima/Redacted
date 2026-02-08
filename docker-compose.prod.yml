@@ -9,6 +9,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes: []  # override dev bind-mount
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
   redacted:
     build:
@@ -18,6 +19,7 @@ services:
         DATABASE_URL: ${DATABASE_URL:-mongodb://mongodb:27017/app}
     restart: unless-stopped
     volumes: []  # override dev bind-mount; run built image
+    command: ["node", "server.js"]  # override dev npm command; use standalone build
     env_file:
       - ./Redacted/.env
     environment:
