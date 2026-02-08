@@ -98,7 +98,7 @@ export function DemoGuardrail() {
                     <div className="space-y-3">
                         <label className="text-sm font-medium text-foreground flex items-center gap-2">
                             <SparklesIcon className="h-4 w-4 text-violet-500" />
-                            Type anything — we'll scan it in real time
+                            Type anything — we&apos;ll scan it in real time
                         </label>
                         <div className="relative">
                             <textarea
