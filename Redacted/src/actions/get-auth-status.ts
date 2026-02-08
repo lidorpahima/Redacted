@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/lib";
+import { prisma } from "@/lib/db";
 import { currentUser } from "@clerk/nextjs/server";
 
 const getAuthStatus = async () => {
@@ -12,7 +12,7 @@ const getAuthStatus = async () => {
 
     let clerkId = user.id;
 
-    const existingUser = await db.user.findFirst({
+    const existingUser = await prisma.user.findFirst({
         where: {
             clerkId,
         },
@@ -21,7 +21,7 @@ const getAuthStatus = async () => {
     console.log("existingUser", existingUser);
 
     if (!existingUser) {
-        await db.user.create({
+        await prisma.user.create({
             data: {
                 clerkId,
                 email: user.primaryEmailAddress.emailAddress,
