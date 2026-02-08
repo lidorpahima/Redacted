@@ -71,8 +71,10 @@ async def get_user_config(x_api_key: str = Header(None)):
         raise HTTPException(status_code=401, detail="Missing X-API-Key header")
     user_config = API_KEY_MAPPING.get(x_api_key)
     if user_config:
-        return user_config
-    # Fallback: resolve from frontend DB (set INTERNAL_API_SECRET + FRONTEND_URL for this)
+        out = dict(user_config)
+        out["_gateway_key"] = x_api_key
+        return out
+    # Fallback: resolve from Redacted DB (set INTERNAL_API_SECRET + FRONTEND_URL for this)
     if not INTERNAL_API_SECRET:
         raise HTTPException(status_code=403, detail="Invalid API Key")
     try:
@@ -92,12 +94,38 @@ async def get_user_config(x_api_key: str = Header(None)):
         }
         if not user_config["api_key"]:
             raise HTTPException(status_code=403, detail="Invalid API Key")
-        API_KEY_MAPPING[x_api_key] = user_config  # cache for next time
+        API_KEY_MAPPING[x_api_key] = {k: v for k, v in user_config.items()}
+        user_config["_gateway_key"] = x_api_key
         return user_config
     except HTTPException:
         raise
     except Exception:
         raise HTTPException(status_code=403, detail="Invalid API Key")
+
+
+def _send_log(gateway_key: str, status: str, violation_reason: str | None = None, provider: str | None = None, model: str | None = None):
+    """Fire-and-forget: POST to Next.js internal log so dashboard Logs page can show activity."""
+    if not INTERNAL_API_SECRET or not FRONTEND_URL:
+        return
+    payload = {"gatewayKey": gateway_key, "status": status}
+    if violation_reason:
+        payload["violationReason"] = violation_reason
+    if provider:
+        payload["provider"] = provider
+    if model:
+        payload["model"] = model
+    try:
+        import threading
+        def _post():
+            httpx.post(
+                f"{FRONTEND_URL}/api/internal/log",
+                json=payload,
+                headers={"Internal-Secret": INTERNAL_API_SECRET},
+                timeout=5.0,
+            )
+        threading.Thread(target=_post, daemon=True).start()
+    except Exception:
+        pass
 
 
 @app.get("/health")
@@ -158,7 +186,7 @@ def list_models(req: ListModelsRequest):
         elif provider == "openai":
             models = _list_models_openai(req.api_key.strip())
         else:
-            # Anthropic etc. don't have a simple list endpoint; frontend will use OpenRouter + custom
+            # Anthropic etc. don't have a simple list endpoint; Redacted will use OpenRouter + custom
             return {"models": []}
         return {"models": models}
     except httpx.HTTPStatusError as e:
@@ -206,11 +234,19 @@ def unregister_key(req: UnregisterKeyRequest):
 @app.post("/v1/chat/completions")
 def chat_proxy(request: ScanRequest, user_config: dict = Depends(get_user_config)):
     user_input = request.text
+    gateway_key = user_config.get("_gateway_key", "")
 
     # 1. Security check
     security_result = analyze_security(user_input)
 
     if not security_result["is_safe"]:
+        _send_log(
+            gateway_key,
+            "blocked",
+            violation_reason=security_result.get("reason") or security_result.get("violated_rule"),
+            provider=user_config.get("provider"),
+            model=user_config.get("model"),
+        )
         return {
             "error": {
                 "message": "Request blocked by Redacted Security Gateway",
@@ -254,6 +290,12 @@ def chat_proxy(request: ScanRequest, user_config: dict = Depends(get_user_config
             timeout=90,
         )
         print("  → LLM response received")
+        _send_log(
+            gateway_key,
+            "passed",
+            provider=user_config.get("provider"),
+            model=user_config.get("model"),
+        )
         return {
             "security_check": "passed",
             "risk_score": security_result["risk_score"],

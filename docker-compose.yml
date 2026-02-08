@@ -10,21 +10,21 @@ services:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - MODEL=${MODEL}
       - EMBEDDING_MODEL=${EMBEDDING_MODEL}
-      - FRONTEND_URL=http://frontend:3000
+      - FRONTEND_URL=http://redacted:3000
       - INTERNAL_API_SECRET=${INTERNAL_API_SECRET}
     volumes:
       - ./backend:/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-  # --- Frontend - Next.js on 3000 ---
-  frontend:
+  # --- Redacted - Next.js on 3000 ---
+  redacted:
     build:
-      context: ./frontend
+      context: ./Redacted
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     env_file:
-      - ./frontend/.env
+      - ./Redacted/.env
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - BACKEND_URL=${NEXT_PUBLIC_API_URL}
@@ -35,14 +35,14 @@ services:
       - INTERNAL_API_SECRET=${INTERNAL_API_SECRET}
 
     volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+      - ./Redacted:/app
+      - redacted_node_modules:/app/node_modules
     depends_on:
       - mongodb
       - backend
     command: sh -c "npm install && npx prisma generate && npm run dev -- --hostname 0.0.0.0"
 
-  # --- MongoDB (for Frontend) ---
+  # --- MongoDB (for Redacted) ---
   mongodb:
     image: mongo:7
     ports:
@@ -62,4 +62,4 @@ services:
 volumes:
   redis_data:
   mongodb_data:
-  frontend_node_modules:
+  redacted_node_modules:

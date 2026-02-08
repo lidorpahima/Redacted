@@ -38,7 +38,7 @@ const TermsPage = () => {
                     Eligibility
                 </h3>
                 <p className="mt-8">
-                    To use Frontend, you must be at least 18 years old and capable of entering into a binding contact.
+                    To use Redacted, you must be at least 18 years old and capable of entering into a binding contact.
                 </p>
 
                 <h3 className="text-lg mt-8">
@@ -56,11 +56,11 @@ const TermsPage = () => {
                     Acceptable Use
                 </h3>
                 <div className="mt-8">
-                    You agree not to use Frontend for any unlawful or prohibited activities, including but not limited to:
+                    You agree not to use Redacted for any unlawful or prohibited activities, including but not limited to:
                     <ul className="list-disc text-muted-foreground ml-8">
                         <li>Uploading or sharing content that is offensive, harmful, or violates any laws.</li>
                         <li>Using the service to distribute spam or malicious content.</li>
-                        <li>Attempting to gain unauthorized access to other user accounts or Frontend&apos;s systems.</li>
+                        <li>Attempting to gain unauthorized access to other user accounts or Redacted&apos;s systems.</li>
                     </ul>
                 </div>
 
@@ -72,14 +72,14 @@ const TermsPage = () => {
                     URL Shortening
                 </h3>
                 <p className="mt-8 text-muted-foreground">
-                    Frontend provides a URL shortening service that allows you to create shortened links from long URLs. You agree not to use this service to create links to illegal or harmful content.
+                    Redacted provides a URL shortening service that allows you to create shortened links from long URLs. You agree not to use this service to create links to illegal or harmful content.
                 </p>
 
                 <h3 className="text-lg mt-8">
                     Analytics
                 </h3>
                 <p className="mt-8 text-muted-foreground">
-                    Frontend offers analytics for your shortened URLs. You agree to use this data responsibly and comply with all applicable privacy laws.
+                    Redacted offers analytics for your shortened URLs. You agree to use this data responsibly and comply with all applicable privacy laws.
                 </p>
 
                 <h3 className="text-lg mt-8">
@@ -105,14 +105,14 @@ const TermsPage = () => {
                 </h3>
 
                 <p className="mt-8 text-muted-foreground">
-                    You retain ownership of any content you upload or create using Frontend. However, by uploading or creating content, you grant Frontend a worldwide, non-exclusive, royalty-free license to use, reproduce, and display your content as necessary to provide our services.
+                    You retain ownership of any content you upload or create using Redacted. However, by uploading or creating content, you grant Redacted a worldwide, non-exclusive, royalty-free license to use, reproduce, and display your content as necessary to provide our services.
                 </p>
 
                 <h2 className="text-xl font-medium mt-12">
                     Responsibility
                 </h2>
                 <p className="mt-8 text-muted-foreground">
-                    You are solely responsible for the content you upload or create. Frontend does not endorse or assume any liability for user content.
+                    You are solely responsible for the content you upload or create. Redacted does not endorse or assume any liability for user content.
                 </p>
 
                 <h2 className="text-xl font-medium mt-12">
@@ -127,7 +127,7 @@ const TermsPage = () => {
                     Termination
                 </h2>
                 <p className="mt-8 text-muted-foreground">
-                    Frontend reserves the right to suspend or terminate your account at any time, with or without notice, for any reason, including but not limited to violation of these terms.
+                    Redacted reserves the right to suspend or terminate your account at any time, with or without notice, for any reason, including but not limited to violation of these terms.
                 </p>
 
                 <h2 className="text-xl font-medium mt-12">
@@ -138,7 +138,7 @@ const TermsPage = () => {
                     No Warranties
                 </h3>
                 <p className="mt-8 text-muted-foreground">
-                    Frontend is provided on an &quot;as is&quot; and &quot;as available&quot; basis. We do not warrant that the service will be uninterrupted, error-free, or free from viruses or other harmful components.
+                    Redacted is provided on an &quot;as is&quot; and &quot;as available&quot; basis. We do not warrant that the service will be uninterrupted, error-free, or free from viruses or other harmful components.
                 </p>
 
                 <h3 className="text-lg mt-8">

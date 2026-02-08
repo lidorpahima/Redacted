@@ -1,13 +1,13 @@
 <img src="https://github.com/user-attachments/assets/e1e0fe16-21f4-44c8-a22d-39b4494433a1" alt="Link Management Logo" width="50" height="50">
 
-# 🔗 Frontend - The Link Management Platform for Businesses (Landing Page)
+# 🔗 Redacted - The Link Management Platform for Businesses (Landing Page)
 
-<!-- <img src="https://github.com/user-attachments/assets/deab03fd-4234-44c3-a6ad-484c4a1a02a1" alt="Frontend Thumbnail"> -->
-<img src="https://github.com/user-attachments/assets/ee867e8e-7871-4289-bd56-3eef40adb9b2" alt="Frontend Thumbnail" style="border-radius: 50px;" width="1280">
+<!-- <img src="https://github.com/user-attachments/assets/deab03fd-4234-44c3-a6ad-484c4a1a02a1" alt="Redacted Thumbnail"> -->
+<img src="https://github.com/user-attachments/assets/ee867e8e-7871-4289-bd56-3eef40adb9b2" alt="Redacted Thumbnail" style="border-radius: 50px;" width="1280">
 
 
 ## 🌟 Introduction
-Frontend is an innovative link management software designed to help you shorten, track, and optimize your links effortlessly. Built with React, Node.js, and MongoDB, Frontend provides powerful analytics and user-friendly features to enhance your link-sharing experience.
+Redacted is an innovative link management software designed to help you shorten, track, and optimize your links effortlessly. Built with React, Node.js, and MongoDB, Redacted provides powerful analytics and user-friendly features to enhance your link-sharing experience.
 
 ## 🚀 Features
 
@@ -18,7 +18,7 @@ Frontend is an innovative link management software designed to help you shorten,
 
 ## 🔗 Live Preview
 
-Check out the live demo of Frontend here: [Live Preview](http://frontend-demo.vercel.app)
+Check out the live demo of Redacted here: [Live Preview](http://frontend-demo.vercel.app)
 
 ## 🎥 Watch Demo on YouTube
 
@@ -37,7 +37,7 @@ Check out the tutorial to see how this link management system was built: [Watch 
 * React Hook Form
 
 ## 🛠️ Installation
-To run Frontend locally, follow these steps:
+To run Redacted locally, follow these steps:
 
 1. Clone the repository:
     ```bash
@@ -67,7 +67,7 @@ To run Frontend locally, follow these steps:
     ```
 
 ## ☕ Buy Me a Coffee
-If you enjoy using Frontend, consider supporting my work!  
+If you enjoy using Redacted, consider supporting my work!  
 [Buy Me a Coffee ☕](https://buymeacoffee.com/shreyas29)
 
 ## 📜 License

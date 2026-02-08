@@ -118,7 +118,7 @@ export async function PATCH(
                 : String(fetchErr);
             const isUnreachable = /ECONNREFUSED|ETIMEDOUT|ENOTFOUND/i.test(msg);
             if (isUnreachable) {
-                // DB already updated; return success so UI reflects it; frontend can show warning
+                // DB already updated; return success so UI reflects it; Redacted UI can show warning
                 console.warn("Backend unreachable after DB update; key saved, gateway sync skipped.", fetchErr);
                 const providerDisplayName =
                     providerToStore === "other"

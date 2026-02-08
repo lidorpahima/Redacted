@@ -10,7 +10,7 @@ const INTERNAL_SECRET = process.env.INTERNAL_API_SECRET;
  * How to use (Backend):
  * 1. Request arrives with header X-API-Key: sk-redacted-xxx
  * 2. Validate key is in VALID_API_KEYS (already registered via /register-key).
- * 3. Call: GET <FRONTEND_URL>/api/internal/resolve-key?key=sk-redacted-xxx
+ * 3. Call: GET <REDACTED_URL>/api/internal/resolve-key?key=sk-redacted-xxx
  *    with header: Internal-Secret: <INTERNAL_API_SECRET>
  * 4. Response: { provider: "openrouter", customerApiKey: "sk-..." }
  * 5. Use customerApiKey to call the LLM provider (OpenRouter, OpenAI, etc.).

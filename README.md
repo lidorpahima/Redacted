@@ -271,7 +271,7 @@ graph LR
 
 ```mermaid
 graph TB
-    subgraph "🖥️ Frontend"
+    subgraph "🖥️ Redacted"
         Next["▲ Next.js 14<br/><i>App Router · Server Actions</i>"]
         Clerk["🔐 Clerk<br/><i>Auth · OAuth</i>"]
         Tailwind["🎨 Tailwind + Radix UI<br/><i>60+ Components</i>"]
@@ -312,7 +312,7 @@ graph TB
 
 | | Component | Technology | Role |
 |:-:|:----------|:----------|:-----|
-| ▲ | **Frontend** | Next.js 14 + Tailwind + Radix UI | Dashboard, key management, analytics |
+| ▲ | **Redacted** | Next.js 14 + Tailwind + Radix UI | Dashboard, key management, analytics |
 | 🔐 | **Auth** | Clerk | OAuth, user management, protected routes |
 | ⚡ | **Backend** | Python (FastAPI + Uvicorn) | Real-time request processing |
 | 🛡️ | **Security** | LangChain + ChromaDB | RAG-based guardrail, threat detection |
@@ -345,14 +345,14 @@ graph TB
 │   ├── requirements.txt
 │   └── Dockerfile
 │
-├── ▲ frontend/                       # Next.js 14 (App Router)
+├── ▲ Redacted/                       # Next.js 14 (App Router)
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── (marketing)/          # 🌐 Landing, features, pricing, enterprise
 │   │   │   ├── (main)/              # 📊 Dashboard: overview, api-keys, logs, activity, settings
 │   │   │   ├── api/
 │   │   │   │   ├── dashboard/        # 🔑 API keys CRUD, list-models
-│   │   │   │   └── internal/         # 🔄 resolve-key (backend ↔ frontend)
+│   │   │   │   └── internal/         # 🔄 resolve-key (backend ↔ Redacted)
 │   │   │   └── auth/                 # 🔐 Clerk sign-in, sign-up, callback
 │   │   ├── components/               # 🎨 UI (60+ Radix), dashboard, navigation
 │   │   ├── lib/                      # 💾 Prisma client
@@ -366,7 +366,7 @@ graph TB
 │   └── claude_desktop_config.json.example
 │
 ├── 🤖 agent_tool.py                  # MCP server for Claude Desktop
-├── 🐳 docker-compose.yml             # backend, frontend, mongodb, redis
+├── 🐳 docker-compose.yml             # backend, redacted, mongodb, redis
 ├── 📝 .env.example
 └── 📘 README.md
 ```
@@ -396,7 +396,7 @@ docker-compose up --build
 
 | | Service | URL |
 |:-:|:--------|:----|
-| 🖥️ | Frontend | http://localhost:3000 |
+| 🖥️ | Redacted | http://localhost:3000 |
 | ⚡ | Backend API | http://localhost:8000 |
 | 📖 | API Docs (Swagger) | http://localhost:8000/docs |
 
@@ -428,7 +428,7 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 | 📋 | `/list-models` | `POST` | List available models from a provider |
 
 <details>
-<summary>🔒 <b>Internal API (Frontend ↔ Backend)</b></summary>
+<summary>🔒 <b>Internal API (Redacted ↔ Backend)</b></summary>
 
 <br/>
 
@@ -447,11 +447,11 @@ curl -X POST http://localhost:8000/v1/chat/completions \
 | 🤖 | `OPENROUTER_API_KEY` | Root | API key for guardrail LLM (OpenRouter) |
 | 🧠 | `MODEL` | Root | Model for security analysis |
 | 📊 | `EMBEDDING_MODEL` | Root | Model for policy embeddings |
-| 🔒 | `INTERNAL_API_SECRET` | Root | Secret for backend ↔ frontend internal API |
-| 🗄️ | `DATABASE_URL` | Frontend | MongoDB connection string |
-| 🔗 | `NEXT_PUBLIC_API_URL` | Frontend | Backend URL (e.g. `http://localhost:8000`) |
-| 🔐 | `CLERK_SECRET_KEY` | Frontend | Clerk authentication |
-| 🔑 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Frontend | Clerk public key |
+| 🔒 | `INTERNAL_API_SECRET` | Root | Secret for backend ↔ Redacted internal API |
+| 🗄️ | `DATABASE_URL` | Redacted | MongoDB connection string |
+| 🔗 | `NEXT_PUBLIC_API_URL` | Redacted | Backend URL (e.g. `http://localhost:8000`) |
+| 🔐 | `CLERK_SECRET_KEY` | Redacted | Clerk authentication |
+| 🔑 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Redacted | Clerk public key |
 
 ---
 

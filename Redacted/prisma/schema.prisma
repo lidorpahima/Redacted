@@ -88,3 +88,17 @@ model ApiKey {
   @@unique(gatewayKey)
   @@index(clerkId)
 }
+
+// Request log: one row per gateway request (passed or blocked). Backend POSTs to /api/internal/log.
+model RequestLog {
+  id               String   @id @default(cuid()) @map("_id")
+  gatewayKey       String   // which gateway key was used (we filter by user's keys in dashboard)
+  status           String   // "passed" | "blocked"
+  violationReason  String?  // if blocked, why (e.g. PII detected)
+  provider         String?
+  model            String?
+  createdAt        DateTime @default(now())
+
+  @@index(gatewayKey)
+  @@index(createdAt)
+}
