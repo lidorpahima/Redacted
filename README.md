@@ -20,6 +20,8 @@
 **A smart API gateway that sits between your apps and LLM providers.**
 **Every request is inspected for threats before reaching the model.**
 
+**Live product:** [redactedme.com](https://redactedme.com/)
+
 <br/>
 
 [🚀 Quick Start](#-getting-started) · [📐 Architecture](#-architecture-overview) · [🔑 API Docs](#-backend-api) · [🤖 MCP Integration](#-mcp-integration-claude-desktop)
@@ -44,6 +46,12 @@
 ## ✨ How It Works
 
 > **Connect** your API key & model → **Get** a gateway key → **Use** it in your app. We handle the rest.
+
+From the live product at [redactedme.com](https://redactedme.com/), the value prop is:
+
+- **Secure your LLM traffic**: every prompt goes through a security gateway before it ever touches OpenAI, Gemini, Claude, Grok, etc.
+- **Enforce your own policies**: use custom rules + policy documents to block things like investment advice, profanity, or data exfiltration.
+- **Stay fast and cost‑efficient**: cached responses turn repeated questions into \~20 ms answers instead of another full LLM call.
 
 | Step | What happens |
 |:----:|:-------------|
@@ -436,17 +444,18 @@ This script:
 
 ### Docker Production Build
 
-For production, use the production compose file:
+For production, use the hardened compose file that mirrors the live deployment:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-This uses:
-- Multi-stage Docker builds (smaller images)
-- Next.js standalone output
-- No volume mounts (runs built artifacts)
-- Production-optimized settings
+This setup:
+
+- **Exposes only nginx** on ports `80` and `443`, terminating TLS with Let's Encrypt certificates.
+- **Keeps Next.js, FastAPI and MongoDB internal** to the Docker network (no direct public ports).
+- **Runs multi-stage Docker builds** for both frontend and backend (small, production-only images).
+- **Serves the dashboard + marketing site** at your domain (e.g. `https://redactedme.com`) and proxies all backend traffic through `/api` (e.g. `https://redactedme.com/api`).
 
 ---
 
