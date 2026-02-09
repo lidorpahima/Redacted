@@ -2,18 +2,28 @@
 # Usage: docker compose -f docker-compose.prod.yml up -d --build
 
 services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - redacted
+      - backend
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
     restart: unless-stopped
     environment:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
       - MODEL=${MODEL}
       - EMBEDDING_MODEL=${EMBEDDING_MODEL}
-      - FRONTEND_URL=http://redacted:3000
+      - FRONTEND_URL=http://redactedme.com
       - INTERNAL_API_SECRET=${INTERNAL_API_SECRET}
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
@@ -23,15 +33,13 @@ services:
       dockerfile: Dockerfile
       args:
         DATABASE_URL: ${DATABASE_URL:-mongodb://mongodb:27017/app}
-    ports:
-      - "3000:3000"
     restart: unless-stopped
     env_file:
       - ./Redacted/.env
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - NEXT_PUBLIC_APP_DOMAIN=${NEXT_PUBLIC_APP_DOMAIN}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_API_URL=https://redactedme.com/api
       - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
       - INTERNAL_API_SECRET=${INTERNAL_API_SECRET}
@@ -42,8 +50,6 @@ services:
 
   mongodb:
     image: mongo:7
-    ports:
-      - "27017:27017"
     restart: unless-stopped
     volumes:
       - mongodb_data:/data/db
