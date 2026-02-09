@@ -13,7 +13,7 @@ services:
     depends_on:
       - redacted
       - backend
-
+    command: ["nginx", "-g", "daemon off;"]
   backend:
     build:
       context: ./backend
